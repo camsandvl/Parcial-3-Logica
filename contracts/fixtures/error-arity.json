@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "errors": [
+    {
+      "code": "ARITY_MISMATCH",
+      "stage": "syntax",
+      "message": "R espera 2 argumentos y recibió 1",
+      "span": [3, 7],
+      "path": "formula"
+    }
+  ]
+}

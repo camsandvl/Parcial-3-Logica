@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "value": false,
+  "summary": "∀x(P(x) → ∃y R(x,y)) es Falso: contraejemplo x = 3",
+  "trace": {
+    "node": "forall",
+    "var": "x",
+    "value": false,
+    "kind": "counterexample",
+    "span": [0, 21],
+    "text": "∀x(P(x) → ∃y R(x,y))",
+    "checked": [
+      { "x": "1", "value": true },
+      { "x": "2", "value": true },
+      { "x": "3", "value": false }
+    ],
+    "decisive": { "x": "3" },
+    "children": [
+      {
+        "node": "implies",
+        "value": false,
+        "kind": "connective",
+        "span": [2, 20],
+        "text": "P(3) → ∃y R(3,y)",
+        "children": [
+          { "node": "pred", "value": true, "kind": "atomic", "span": [3, 7], "text": "P(3)", "children": [] },
+          {
+            "node": "exists",
+            "var": "y",
+            "value": false,
+            "kind": "full_check",
+            "span": [10, 20],
+            "text": "∃y R(3,y)",
+            "checked": [
+              { "y": "1", "value": false },
+              { "y": "2", "value": false },
+              { "y": "3", "value": false }
+            ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

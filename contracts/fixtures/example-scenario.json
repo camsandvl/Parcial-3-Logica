@@ -1,0 +1,23 @@
+{
+  "language": {
+    "functions": [
+      { "name": "f", "arity": 1 },
+      { "name": "c", "arity": 0 }
+    ],
+    "predicates": [
+      { "name": "P", "arity": 1 },
+      { "name": "R", "arity": 2 }
+    ]
+  },
+  "interpretation": {
+    "domain": ["1", "2", "3"],
+    "functions": {
+      "f": [[["1"], "2"], [["2"], "3"], [["3"], "1"]],
+      "c": [[[], "1"]]
+    },
+    "predicates": {
+      "P": [["1"], ["3"]],
+      "R": [["1", "2"], ["2", "3"]]
+    }
+  }
+}
