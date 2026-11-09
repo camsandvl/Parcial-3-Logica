@@ -102,6 +102,9 @@ export interface EvaluateRequest {
   interpretation: Interpretation;
   formula: string;
   environment: Environment;
+  /** Solo para desarrollo: si viene, el backend lo usa en vez de parsear `formula`.
+   *  Permite probar el evaluador (Ale) sin depender del parser (Emily). */
+  ast?: Formula;
 }
 
 export interface HistoryEntry {

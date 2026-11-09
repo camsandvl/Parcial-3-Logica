@@ -36,24 +36,24 @@ export function Character({ name, expression, beat, talking, side = 'left' }: Pr
         className="vn-character-layer"
         initial={{ y: 0, scaleX: 1, scaleY: 1 }}
         animate={{
-          y: ['0%', '1.5%', '-5%', '0%'],
-          scaleX: [1, 1.04, 0.97, 1],
-          scaleY: [1, 0.95, 1.04, 1],
+          y: ['0%', '0.4%', '-1.8%', '0%'],
+          scaleX: [1, 1.012, 0.995, 1],
+          scaleY: [1, 0.988, 1.01, 1],
         }}
-        transition={{ duration: 0.45, times: [0, 0.2, 0.55, 1], ease: 'easeOut' }}
+        transition={{ duration: 0.5, times: [0, 0.2, 0.55, 1], ease: 'easeOut' }}
       >
         <motion.div
           className="vn-character-layer"
           animate={
             talking
-              ? { y: ['0%', '-1.6%', '0%'], rotate: [0, tilt * 1.2, 0, -tilt * 0.8, 0], scaleY: [1, 1.015, 1] }
+              ? { y: ['0%', '-0.6%', '0%'], rotate: [0, tilt * 0.4, 0, -tilt * 0.3, 0], scaleY: [1, 1.006, 1] }
               : { y: '0%', rotate: 0, scaleY: [1, 1.012, 1] }
           }
           transition={
             talking
-              ? { y: { repeat: Infinity, duration: 0.26, ease: 'easeInOut' },
-                  rotate: { repeat: Infinity, duration: 1.1, ease: 'easeInOut' },
-                  scaleY: { repeat: Infinity, duration: 0.26, ease: 'easeInOut' } }
+              ? { y: { repeat: Infinity, duration: 0.34, ease: 'easeInOut' },
+                  rotate: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' },
+                  scaleY: { repeat: Infinity, duration: 0.34, ease: 'easeInOut' } }
               : { y: { duration: 0.2 }, rotate: { duration: 0.3 },
                   scaleY: { repeat: Infinity, duration: 3.2, ease: 'easeInOut' } }
           }

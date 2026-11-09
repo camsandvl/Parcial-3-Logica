@@ -7,12 +7,32 @@
     "var": "x",
     "value": true,
     "kind": "witness",
-    "span": [0, 13],
+    "span": [
+      0,
+      13
+    ],
     "text": "∃x R(x, f(x))",
-    "checked": [{ "x": "1", "value": true }],
-    "decisive": { "x": "1" },
+    "checked": [
+      {
+        "x": "1",
+        "value": true
+      }
+    ],
+    "decisive": {
+      "x": "1"
+    },
     "children": [
-      { "node": "pred", "value": true, "kind": "atomic", "span": [2, 13], "text": "R(1, f(1)) = R(1, 2)", "children": [] }
+      {
+        "node": "pred",
+        "value": true,
+        "kind": "atomic",
+        "span": [
+          3,
+          13
+        ],
+        "text": "R(1, f(1)) = R(1, 2)",
+        "children": []
+      }
     ]
   }
 }
