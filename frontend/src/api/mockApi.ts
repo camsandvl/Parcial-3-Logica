@@ -28,20 +28,23 @@ export const mockApi: MachineApi = {
   async validateLanguage(language) {
     const errors: ValidationError[] = [];
     const seen = new Set<string>();
+    // path por posición (REPARTO.md §3.5): "language.functions[1]", "language.predicates[0]".
     const all = [
-      ...language.functions.map((s) => ({ ...s, kind: 'functions' as const })),
-      ...language.predicates.map((s) => ({ ...s, kind: 'predicates' as const })),
+      ...language.functions.map((s, i) => ({ ...s, kind: 'functions' as const, i })),
+      ...language.predicates.map((s, i) => ({ ...s, kind: 'predicates' as const, i })),
     ];
     for (const s of all) {
-      const path = `${s.kind}.${s.name}`;
-      if (!NAME.test(s.name) || VARIABLE.test(s.name))
-        errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `Nombre inválido: "${s.name}"`, path });
+      const path = `language.${s.kind}[${s.i}]`;
+      if (!NAME.test(s.name))
+        errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `"${s.name}" no es un nombre válido: debe empezar con letra`, path });
+      else if (VARIABLE.test(s.name))
+        errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `"${s.name}" parece una variable (x, y, z, w); usa otro nombre`, path });
       if (seen.has(s.name))
         errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `"${s.name}" está repetido`, path });
       seen.add(s.name);
       const min = s.kind === 'predicates' ? 1 : 0;
       if (!Number.isInteger(s.arity) || s.arity < min)
-        errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `Aridad inválida para ${s.name}: debe ser un entero ≥ ${min}`, path });
+        errors.push({ code: 'INVALID_LANGUAGE', stage: 'language', message: `La aridad de ${s.name} debe ser un entero ≥ ${min}`, path });
     }
     return delay(result(errors));
   },

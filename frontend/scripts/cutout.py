@@ -2,7 +2,8 @@
 La sombra no se hornea: se aplica con CSS (.vn-character img) para poder ajustarla.
 
 Uso (desde frontend/):
-    python scripts/cutout.py public/assets/characters/turing --mask turing-neutral.png
+    python scripts/cutout.py public/assets/characters/turing
+    python scripts/cutout.py public/assets/characters/godel
 
 - Lee todos los PNG de la carpeta (excepto la subcarpeta cutout/).
 - --mask: PNG cuya transparencia se aplica a todos. Sirve cuando las variantes
@@ -57,13 +58,23 @@ def main() -> None:
     p.add_argument('folder', type=Path)
     p.add_argument('--mask', help='PNG de la carpeta cuya transparencia se usa para todos')
     p.add_argument('--width', type=int, default=26, help='grosor del contorno en px')
+    p.add_argument('--size', default='750x1080',
+                   help='tamaño común (ANCHOxALTO) al que se escalan todas las expresiones antes del contorno')
     args = p.parse_args()
 
     out = args.folder / 'cutout'
     out.mkdir(exist_ok=True)
+    size = tuple(int(n) for n in args.size.lower().split('x'))
     mask = Image.open(args.folder / args.mask) if args.mask else None
     for f in sorted(args.folder.glob('*.png')):
         src = Image.open(f)
+        # Las expresiones pueden venir exportadas a otra escala (misma proporción):
+        # se igualan para que el personaje no "salte" al cambiar de cara.
+        if src.size != size:
+            ratio_src, ratio_dst = src.width / src.height, size[0] / size[1]
+            if abs(ratio_src - ratio_dst) > 0.01:
+                raise SystemExit(f'{f.name} tiene otra proporción ({src.size}); expórtala como {size}')
+            src = src.convert('RGBA').resize(size, Image.LANCZOS)
         if mask is not None and src.size != mask.size:
             raise SystemExit(f'{f.name} mide {src.size}, la máscara mide {mask.size}')
         outline(src, mask, args.width).save(out / f.name, optimize=True)

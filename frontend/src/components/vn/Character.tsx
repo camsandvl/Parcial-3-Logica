@@ -1,9 +1,18 @@
 import { motion } from 'framer-motion';
 
-export type Expression = 'neutral' | 'talk' | 'happy';
+export type Expression = 'neutral' | 'talk' | 'happy' | 'confused';
+export type CharacterName = 'turing' | 'godel';
+
+/** Archivo (en public/assets/characters/<nombre>/cutout/) de cada expresión.
+ *  Si un personaje no tiene una expresión, se usa la neutral. */
+const FILES: Record<CharacterName, Partial<Record<Expression, string>>> = {
+  // Dibujos 2D. Las fotos anteriores quedan en turing/photos/ por si se quieren volver a usar.
+  turing: { neutral: 'variation_1_neutral', talk: 'variation_3_hablando', happy: 'variation_2_feliz' },
+  godel: { neutral: 'godel-neutral', talk: 'godel-talking', happy: 'godel-happy', confused: 'godel-confused' },
+};
 
 interface Props {
-  name: 'turing';
+  name: CharacterName;
   expression: Expression;
   /** Cambia en cada línea de diálogo para disparar el saltito. */
   beat: number;
@@ -21,7 +30,8 @@ interface Props {
  * Las imágenes con contorno se generan con scripts/cutout.py.
  */
 export function Character({ name, expression, beat, talking, side = 'left' }: Props) {
-  const src = `/assets/characters/${name}/cutout/${name}-${expression}.png`;
+  const files = FILES[name];
+  const current = files[expression] ? expression : 'neutral';
   const tilt = side === 'left' ? 1 : -1;
 
   return (
@@ -58,7 +68,22 @@ export function Character({ name, expression, beat, talking, side = 'left' }: Pr
                   scaleY: { repeat: Infinity, duration: 3.2, ease: 'easeInOut' } }
           }
         >
-          <img src={src} alt="" draggable={false} />
+          {/* Los dibujos están hechos mirando hacia la derecha (para el lado izquierdo);
+              a la derecha se reflejan para que el personaje mire hacia el centro. */}
+          <div className={`vn-character-layer ${side === 'right' ? 'vn-flip' : ''}`}>
+            {/* Todas las expresiones quedan cargadas y apiladas: cambiar de cara es
+                instantáneo, sin parpadeo mientras se descarga la imagen nueva. */}
+            {(Object.entries(files) as Array<[Expression, string]>).map(([expr, file]) => (
+              <img
+                key={expr}
+                src={`/assets/characters/${name}/cutout/${file}.png`}
+                alt=""
+                draggable={false}
+                className="vn-expression"
+                style={{ opacity: expr === current ? 1 : 0 }}
+              />
+            ))}
+          </div>
         </motion.div>
       </motion.div>
     </motion.div>

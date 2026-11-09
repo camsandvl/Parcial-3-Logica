@@ -8,13 +8,19 @@ interface Props {
   onAdvance: () => void;
   /** Avisa cuando el texto empieza o termina de escribirse (para animar al personaje). */
   onTypingChange?: (typing: boolean) => void;
+  /** Lado de quien habla: la placa con el nombre se coloca de ese lado. */
+  side?: 'left' | 'right';
 }
+
+/** Enter/Espacio dentro de un campo o botón pertenecen a ese control, no al diálogo. */
+const isFormControl = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(t.tagName));
 
 const CHARS_PER_SECOND = 45;
 
 /** Caja de diálogo con efecto de máquina de escribir.
  *  Clic, Enter o Espacio: si el texto aún se escribe, lo completa; si no, avanza. */
-export function DialogBox({ speaker, text, canAdvance, onAdvance, onTypingChange }: Props) {
+export function DialogBox({ speaker, text, canAdvance, onAdvance, onTypingChange, side = 'left' }: Props) {
   const [shown, setShown] = useState(0);
   const done = shown >= text.length;
 
@@ -35,7 +41,7 @@ export function DialogBox({ speaker, text, canAdvance, onAdvance, onTypingChange
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if ((e.key === 'Enter' || e.key === ' ') && !isFormControl(e.target)) {
         e.preventDefault();
         next();
       }
@@ -45,7 +51,7 @@ export function DialogBox({ speaker, text, canAdvance, onAdvance, onTypingChange
   });
 
   return (
-    <div className="vn-dialog" onClick={next} role="log" aria-live="polite">
+    <div className={`vn-dialog vn-dialog-${side}`} onClick={next} role="log" aria-live="polite">
       <div className="vn-nameplate">{speaker}</div>
       <p>{text.slice(0, shown)}</p>
       {done && canAdvance && <span className="vn-next" aria-hidden="true">▼</span>}
