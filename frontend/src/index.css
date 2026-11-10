@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Special+Elite&family=Titillium+Web:wght@700&family=Single+Day&family=Patrick+Hand&family=Caveat:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Special+Elite&family=Titillium+Web:wght@700&family=Single+Day&family=Patrick+Hand&family=Caveat:wght@600;700&family=Gochi+Hand&display=swap');
 
 :root {
   --bg: #15130f;
@@ -158,27 +158,27 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 
 /* Tinta y resaltador sobre el papel: multiply para que parezcan dibujados en la hoja. */
 .sketch-label {
-  font-family: 'Caveat', 'Patrick Hand', cursive; font-weight: 600; font-size: 2.8cqw; line-height: 1;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: 2.8cqw; line-height: 1;
   color: rgba(35, 40, 70, .8); white-space: nowrap; transform-origin: left center;
 }
 .sketch-label.is-right { transform: translateX(-100%); transform-origin: right center; }
 .sketch-state-hl { border-radius: 50%; background: rgba(255, 205, 40, .6); mix-blend-mode: multiply; opacity: 0; }
 .sketch-cell-hl { background: rgba(255, 205, 40, .55); mix-blend-mode: multiply; opacity: 0; }
 .sketch-symbol {
-  display: grid; place-items: center; font-family: 'Caveat', cursive; font-weight: 700; font-size: 3.5cqw;
+  display: grid; place-items: center; font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: 3.5cqw;
   color: #1c2350; opacity: 0; line-height: 1;
 }
 .sketch-lamp { border-radius: 50%; background: rgba(240, 120, 40, .85); mix-blend-mode: multiply; opacity: 0; }
 .sketch-display { display: grid; place-items: center; }
 .sketch .sketch-start {
   left: 50%; bottom: -5%; translate: -50% 0; pointer-events: auto; cursor: pointer; /* cuelga del borde: no tapa "cinta infinita" */
-  font-family: 'Caveat', cursive; font-weight: 700; font-size: 4.2cqw; color: #1c2350; line-height: 1;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: 4.2cqw; color: #1c2350; line-height: 1;
   padding: 1.2cqw 3.6cqw; background: #fff4d6; border: .45cqw solid #1c2350; border-radius: 999px;
   box-shadow: 0 .8cqw 0 #1c2350; animation: start-glow 1.3s ease-in-out infinite;
 }
 @keyframes start-glow { 50% { background: #ffd970; } }
 .sketch-display-text {
-  white-space: pre; text-align: center; font-family: 'Caveat', cursive; font-weight: 700;
+  white-space: pre; text-align: center; font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400;
   font-size: 3.8cqw; line-height: 1; color: #1c2350; letter-spacing: .04em;
 }
 
@@ -196,7 +196,7 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-lever:disabled { opacity: 1; }
 
 .vn-character { position: absolute; bottom: -2%; height: 82%; aspect-ratio: 810 / 1110; pointer-events: none; /* decorativo: no tapa botones */ }
-.vn-character-left { left: 2%; }
+.vn-character-left { left: 7%; }
 .vn-character-right { right: 2%; }
 .vn-scene-godel .vn-character-right { right: -4%; } /* Gödel un poco más a la orilla */
 /* La caja de diálogo termina antes de Gödel: ancho del personaje (82% de alto × 810/1110) menos lo que sale del borde. */

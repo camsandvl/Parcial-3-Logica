@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export type Expression = 'neutral' | 'talk' | 'happy' | 'confused';
@@ -10,6 +11,10 @@ const FILES: Record<CharacterName, Partial<Record<Expression, string>>> = {
   turing: { neutral: 'variation_1_neutral', talk: 'variation_3_hablando', happy: 'variation_2_feliz' },
   godel: { neutral: 'godel-neutral', talk: 'godel-talking', happy: 'godel-happy', confused: 'godel-confused' },
 };
+
+/** URLs de todas las expresiones de un personaje (para precargarlas antes de su escena). */
+export const characterImages = (name: CharacterName) =>
+  Object.values(FILES[name]).map((file) => `/assets/characters/${name}/cutout/${file}.png`);
 
 interface Props {
   name: CharacterName;
@@ -33,41 +38,57 @@ export function Character({ name, expression, beat, talking, side = 'left' }: Pr
   const files = FILES[name];
   const current = files[expression] ? expression : 'neutral';
   const tilt = side === 'left' ? 1 : -1;
+  // Hasta terminar de entrar, el personaje solo se desliza: el saltito y el rebote al
+  // hablar esperan, para que la entrada no se vea temblorosa.
+  const [entered, setEntered] = useState(false);
+  const moving = entered && talking;
+  // El saltito marca el cambio de línea: no se hace con la línea con la que entra.
+  const firstBeat = useRef(beat);
+  const hop = entered && beat !== firstBeat.current;
 
   return (
     <motion.div
       className={`vn-character vn-character-${side}`}
       initial={{ x: side === 'left' ? '-120%' : '120%' }}
       animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 90, damping: 16, delay: 0.3 }}
+      // Curva que desacelera y termina exactamente en su lugar (un resorte "salta" unos px al detenerse).
+      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+      onAnimationComplete={() => setEntered(true)}
     >
       <motion.div
         key={beat}
         className="vn-character-layer"
         initial={{ y: 0, scaleX: 1, scaleY: 1 }}
-        animate={{
+        animate={hop ? {
           y: ['0%', '0.4%', '-1.8%', '0%'],
           scaleX: [1, 1.012, 0.995, 1],
           scaleY: [1, 0.988, 1.01, 1],
-        }}
+        } : {}}
         transition={{ duration: 0.5, times: [0, 0.2, 0.55, 1], ease: 'easeOut' }}
       >
+        {/* Habla: rebote corto y balanceo. Empieza desde donde esté (null = valor actual)
+            y al callar vuelve suave a reposo, así no hay saltos entre línea y línea. */}
         <motion.div
           className="vn-character-layer"
+          initial={false}
           animate={
-            talking
-              ? { y: ['0%', '-0.6%', '0%'], rotate: [0, tilt * 0.4, 0, -tilt * 0.3, 0], scaleY: [1, 1.006, 1] }
-              : { y: '0%', rotate: 0, scaleY: [1, 1.012, 1] }
+            moving
+              ? { y: [null, '-0.6%', '0%'], rotate: [null, tilt * 0.4, 0, -tilt * 0.3, 0] }
+              : { y: '0%', rotate: 0 }
           }
           transition={
-            talking
+            moving
               ? { y: { repeat: Infinity, duration: 0.34, ease: 'easeInOut' },
-                  rotate: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' },
-                  scaleY: { repeat: Infinity, duration: 0.34, ease: 'easeInOut' } }
-              : { y: { duration: 0.2 }, rotate: { duration: 0.3 },
-                  scaleY: { repeat: Infinity, duration: 3.2, ease: 'easeInOut' } }
+                  rotate: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' } }
+              : { duration: 0.25, ease: 'easeOut' }
           }
         >
+          {/* Respiración: capa propia que nunca se interrumpe (hable o no). */}
+          <motion.div
+            className="vn-character-layer"
+            animate={{ scaleY: [1, 1.012, 1] }}
+            transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut' }}
+          >
           {/* Los dibujos están hechos mirando hacia la derecha (para el lado izquierdo);
               a la derecha se reflejan para que el personaje mire hacia el centro. */}
           <div className={`vn-character-layer ${side === 'right' ? 'vn-flip' : ''}`}>
@@ -84,6 +105,7 @@ export function Character({ name, expression, beat, talking, side = 'left' }: Pr
               />
             ))}
           </div>
+          </motion.div>
         </motion.div>
       </motion.div>
     </motion.div>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useAnimationControls } from 'framer-motion';
-import { Character, type Expression } from '../components/vn/Character';
+import { Character, characterImages, type Expression } from '../components/vn/Character';
 import { DialogBox } from '../components/vn/DialogBox';
 import { Machine } from '../components/vn/Machine';
 import { useMachine } from '../store/machine';
+import { preloadImages } from '../utils/preload';
 
 interface Line {
   expression: Expression;
@@ -34,6 +35,11 @@ export function Activation() {
   const shake = useAnimationControls();
   const current = SCRIPT[line];
   const big = line >= NOTE_BIG_FROM;
+
+  // Mientras el usuario lee, se descarga la escena 2 (Gödel y su fondo).
+  useEffect(() => {
+    preloadImages([...characterImages('godel'), '/assets/scene2/bg-workshop.png']);
+  }, []);
 
   const advance = () => {
     if (line < SCRIPT.length - 1) setLine(line + 1);
