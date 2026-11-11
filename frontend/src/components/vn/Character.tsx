@@ -24,6 +24,8 @@ interface Props {
   /** true mientras su texto se está escribiendo: rebota al ritmo del habla. */
   talking: boolean;
   side?: 'left' | 'right';
+  /** true: sale de escena deslizándose por su lado. */
+  leaving?: boolean;
 }
 
 /**
@@ -34,7 +36,7 @@ interface Props {
  *   3. mientras habla, rebote corto y balanceo; en reposo, respiración lenta.
  * Las imágenes con contorno se generan con scripts/cutout.py.
  */
-export function Character({ name, expression, beat, talking, side = 'left' }: Props) {
+export function Character({ name, expression, beat, talking, side = 'left', leaving = false }: Props) {
   const files = FILES[name];
   const current = files[expression] ? expression : 'neutral';
   const tilt = side === 'left' ? 1 : -1;
@@ -50,9 +52,9 @@ export function Character({ name, expression, beat, talking, side = 'left' }: Pr
     <motion.div
       className={`vn-character vn-character-${side}`}
       initial={{ x: side === 'left' ? '-120%' : '120%' }}
-      animate={{ x: 0 }}
+      animate={{ x: leaving ? (side === 'left' ? '-120%' : '120%') : 0 }}
       // Curva que desacelera y termina exactamente en su lugar (un resorte "salta" unos px al detenerse).
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+      transition={leaving ? { duration: 0.7, ease: [0.5, 0, 0.75, 0], delay: 0.25 } : { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
       onAnimationComplete={() => setEntered(true)}
     >
       <motion.div

@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Special+Elite&family=Titillium+Web:wght@700&family=Single+Day&family=Patrick+Hand&family=Caveat:wght@600;700&family=Gochi+Hand&display=swap');
 
+/* --u (unidad de la escena) se calcula UNA vez, en los hijos de .vn-scene, y se hereda ya en px.
+   Sin esto, un contenedor interno (p. ej. el estante) recalcularía sus cqw/cqh. */
+@property --u { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
 :root {
   --bg: #15130f;
   --panel: #221e17;
@@ -113,8 +117,10 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-scene {
   position: relative; height: 100vh; overflow: clip; background: #2a2350; /* clip: el foco de un campo no puede desplazar la escena */
   container-type: size;
-  --u: min(1cqw, 1.778cqh); /* tamaño de texto/UI relativo al área visible */
 }
+/* Unidad de la escena: se define en los hijos directos para que cqw/cqh se midan contra
+   .vn-scene (en el propio contenedor se medirían contra la ventana). */
+.vn-scene > * { --u: min(1cqw, 1.778cqh); }
 .vn-stage {
   position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
   width: max(100cqw, 100cqh * 16 / 9);
@@ -228,6 +234,23 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-bg.is-placeholder { filter: hue-rotate(-20deg) saturate(.7) brightness(.8); }
 
 /* Zona de trabajo a la izquierda de Gödel: estante arriba, tarjeta de pasos debajo. */
+/* Paleta de Turing: azul, tomado de su corbata. Solo afecta su escena. */
+.vn-scene-turing {
+  --accent: #2b5797;       /* azul corbata */
+  --accent-dark: #1b3a68;
+  --accent-soft: #a9c4e6;
+}
+.vn-scene-turing .vn-nameplate { background: var(--accent); }
+.vn-scene-turing .vn-character { height: 95%; bottom: -8%; left: 2%; } /* Turing más grande, más abajo y a la izquierda (base: 82%, -2%, 7%); se recorta por abajo */
+
+/* Paleta de Gödel: ciruela, tomada de su corbata. Solo afecta su escena. */
+.vn-scene-godel {
+  --accent: #7a3566;       /* ciruela */
+  --accent-dark: #4e2142;  /* ciruela oscuro: marcos y sombras */
+  --accent-soft: #c9a6c4;  /* lila suave: franjas y fondos */
+}
+.vn-scene-godel .vn-nameplate { background: var(--accent); }
+
 .shelf, .step-card {
   --ink: #1d1a33;
   position: absolute; left: 3%; right: 46%;
@@ -239,33 +262,41 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 
 /* Estante: tira de madera con las fichas fabricadas */
 .shelf {
-  top: 3%; height: 23%; display: flex; flex-direction: column; gap: calc(.4 * var(--u));
+  top: 3%; height: 25%; display: flex; flex-direction: column; gap: calc(.4 * var(--u));
   padding: calc(1 * var(--u)) calc(1.6 * var(--u)) calc(.6 * var(--u));
-  background: linear-gradient(#f6ecd6 0 82%, #b07a3e 82% 100%);
-  border: calc(.4 * var(--u)) solid #8a5a2b;
+  background: linear-gradient(#f6ecd6 0 82%, var(--accent-soft) 82% 100%);
+  border: calc(.4 * var(--u)) solid var(--accent-dark);
 }
 .shelf-head { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+.shelf-actions { display: flex; gap: calc(.8 * var(--u)); align-items: center; }
+.btn-small { padding: calc(.5 * var(--u)) calc(1.4 * var(--u)) !important; font-size: calc(1.2 * var(--u)) !important; }
+/* envoltorio de la caja de diálogo: solo sirve para desvanecerla (no está posicionado,
+   así la caja se sigue ubicando respecto a la escena) */
+.vn-dialog-wrap { position: static; }
 .shelf-head h2 {
   margin: 0; font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-weight: 400; text-transform: uppercase;
   letter-spacing: .05em; -webkit-text-stroke: .6px currentColor; font-size: calc(1.8 * var(--u));
 }
 .shelf-head h2 span { opacity: .55; }
 .shelf-tiles {
-  flex: 1; min-height: 0; display: flex; align-items: flex-end; gap: calc(1.4 * var(--u));
+  flex: 1; min-height: 0; display: flex; align-items: flex-end; gap: calc(2.6 * var(--u)); /* espacio para la flecha de salida */
+  container-type: size; /* las fichas chicas se ajustan a la altura del estante (cqh) */
   overflow-x: auto; overflow-y: hidden; padding: calc(.6 * var(--u)) calc(1.2 * var(--u)) calc(1 * var(--u)) calc(.2 * var(--u));
 }
 .shelf-empty { margin: auto; opacity: .5; font-size: calc(1.3 * var(--u)); }
 
 /* Tarjeta de pasos */
 .step-card {
-  top: 29%; bottom: 28%; display: flex; flex-direction: column; gap: calc(1.2 * var(--u));
+  top: 29%; bottom: 24%; display: flex; flex-direction: column; gap: calc(1.2 * var(--u));
   padding: calc(1.6 * var(--u)) calc(2.2 * var(--u));
-  border: calc(.4 * var(--u)) solid #1d1a33;
+  border: calc(.4 * var(--u)) solid var(--accent-dark);
 }
 .step-progress { display: flex; gap: calc(.6 * var(--u)); margin: 0; padding: 0; list-style: none; counter-reset: step; }
 .step-progress li {
   counter-increment: step; display: flex; align-items: center; gap: calc(.5 * var(--u));
-  font-size: calc(1.15 * var(--u)); opacity: .4; text-transform: uppercase; letter-spacing: .05em;
+  font-size: calc(1.3 * var(--u)); opacity: .4; text-transform: uppercase; letter-spacing: .05em;
+  /* misma letra que "Tus símbolos" */
+  font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-weight: 400; -webkit-text-stroke: .6px currentColor;
 }
 .step-progress li::before {
   content: counter(step); display: grid; place-items: center; width: calc(2 * var(--u)); height: calc(2 * var(--u));
@@ -273,29 +304,52 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 }
 .step-progress li + li::after { content: none; }
 .step-progress li.current { opacity: 1; }
-.step-progress li.current::before { background: #c4433a; border-color: #c4433a; color: #fff; }
+.step-progress li.current::before { background: var(--accent); border-color: var(--accent); color: #fff; }
 .step-progress li.done { opacity: .75; }
 .step-progress li.done::before { content: '✓'; background: var(--ink); color: #f6ecd6; }
 .step-body { flex: 1; min-height: 0; display: flex; }
 
-/* Paso 1: tres tarjetas grandes */
-.choice-grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(1.2 * var(--u)); }
+/* Paso 1: tres fichas de papel dibujadas a mano, con la letra de la nota de Turing.
+   El borde irregular sale de radios desiguales (truco de "borde a mano"); cada ficha
+   va un poco girada y sujeta con un trozo de cinta. */
+.choice-grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(1.6 * var(--u)); padding: calc(.8 * var(--u)) calc(.4 * var(--u)) 0; }
 .choice {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(.6 * var(--u));
-  padding: calc(1.4 * var(--u)) calc(1 * var(--u)); text-align: center;
-  border: 3px solid var(--ink); border-radius: calc(1.2 * var(--u)); cursor: pointer;
-  box-shadow: 0 calc(.5 * var(--u)) 0 var(--ink); transition: transform .12s, box-shadow .12s;
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(.5 * var(--u)); padding: calc(1.8 * var(--u)) calc(1.2 * var(--u)) calc(1.4 * var(--u)); text-align: center;
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; color: #1c2350 !important;
+  background-color: #fbf3df;
+  /* renglones de cuaderno muy tenues */
+  background-image: repeating-linear-gradient(180deg, transparent 0 calc(2.2 * var(--u) - 1px), rgba(70, 110, 170, .14) calc(2.2 * var(--u) - 1px) calc(2.2 * var(--u)));
+  border: 2.5px solid #1c2350;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: calc(.3 * var(--u)) calc(.5 * var(--u)) calc(.8 * var(--u)) rgba(29, 26, 51, .25);
+  cursor: pointer; transition: transform .18s ease, box-shadow .18s ease;
 }
-.choice:hover { transform: translateY(-3px); box-shadow: 0 calc(.8 * var(--u)) 0 var(--ink); }
-.choice:active { transform: translateY(2px); box-shadow: 0 calc(.2 * var(--u)) 0 var(--ink); }
-.choice-function, .choice-constant { background: linear-gradient(#f3d79b, #e2b46a); }
-.choice-predicate { background: linear-gradient(#9fd0c3, #6aa597); }
-.choice-title { font-size: calc(2 * var(--u)); }
-.choice-example { font-family: var(--mono); font-size: calc(2.4 * var(--u)); background: rgba(255, 250, 240, .7); border-radius: calc(.6 * var(--u)); padding: 0 calc(.8 * var(--u)); }
-.choice-desc { font-size: calc(1.2 * var(--u)); line-height: 1.3; opacity: .85; }
+.choice:nth-child(1) { rotate: -2deg; }
+.choice:nth-child(2) { rotate: 1.2deg; }
+.choice:nth-child(3) { rotate: -1deg; }
+.choice::before { /* trozo de cinta adhesiva */
+  content: ''; position: absolute; top: calc(-.9 * var(--u)); left: 50%; width: calc(5.5 * var(--u)); height: calc(1.8 * var(--u));
+  translate: -50% 0; rotate: -4deg; background: rgba(226, 214, 180, .85);
+  border-left: 1px dashed rgba(120, 100, 60, .35); border-right: 1px dashed rgba(120, 100, 60, .35);
+}
+.choice:hover { transform: translateY(calc(-.5 * var(--u))) rotate(.8deg); box-shadow: calc(.4 * var(--u)) calc(1 * var(--u)) calc(1.4 * var(--u)) rgba(29, 26, 51, .3); }
+.choice:active { transform: translateY(1px); box-shadow: calc(.2 * var(--u)) calc(.3 * var(--u)) calc(.5 * var(--u)) rgba(29, 26, 51, .25); }
+.choice-title {
+  font-size: calc(2.4 * var(--u)); line-height: 1; padding: 0 calc(.4 * var(--u));
+  /* subrayado de marcador, del color de la ficha que se fabricará */
+  background: linear-gradient(transparent 55%, var(--marker) 55% 90%, transparent 90%);
+}
+.choice-function, .choice-constant { --marker: rgba(240, 180, 70, .6); }
+.choice-predicate { --marker: rgba(90, 170, 150, .5); }
+.choice-example {
+  font-size: calc(2.8 * var(--u)); line-height: 1.1; padding: calc(.1 * var(--u)) calc(1 * var(--u));
+  border: 2px solid #1c2350; border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+}
+.choice-desc { font-size: calc(1.35 * var(--u)); line-height: 1.25; opacity: .85; }
 
 /* Pasos 2-4: pregunta a la izquierda, vista previa de la ficha a la derecha */
-.step-row { flex: 1; display: grid; grid-template-columns: 1fr auto; gap: calc(2 * var(--u)); align-items: center; }
+.step-row { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: calc(2 * var(--u)); align-items: start; padding-top: calc(.6 * var(--u)); }
 .step-main { display: flex; flex-direction: column; gap: calc(.9 * var(--u)); }
 .step-label { font-size: calc(1.9 * var(--u)); }
 .step-input {
@@ -304,10 +358,10 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 }
 .step-help { margin: 0; font-size: calc(1.25 * var(--u)); opacity: .75; }
 .step-help.is-error { color: #b0332a; opacity: 1; }
-.step-help code { font-family: var(--mono); font-size: 1.15em; background: rgba(29, 26, 51, .08); padding: 0 .3em; border-radius: 4px; }
+.step-help code { white-space: nowrap; font-family: var(--mono); font-size: 1.15em; background: rgba(29, 26, 51, .08); padding: 0 .3em; border-radius: 4px; }
 .step-summary { margin: 0; font-size: calc(1.5 * var(--u)); line-height: 1.4; font-weight: 600; }
 .step-actions { display: flex; gap: calc(1 * var(--u)); margin-top: calc(.4 * var(--u)); flex-wrap: wrap; }
-.step-preview { padding: calc(1 * var(--u)) calc(1.4 * var(--u)) 0 0; }
+.step-preview { display: flex; justify-content: center; padding: 0 calc(2.2 * var(--u)) 0 0; margin-top: calc(-1.6 * var(--u)); /* sube la ficha, sin tocar la barra de pasos */ }
 .step-next { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(1.2 * var(--u)); text-align: center; }
 
 .arity-chips { display: flex; gap: calc(.8 * var(--u)); }
@@ -315,69 +369,153 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
   width: calc(4.4 * var(--u)); height: calc(4.4 * var(--u)); padding: 0; border-radius: 50%;
   font-size: calc(2 * var(--u)); background: #fffaf0; border: 3px solid var(--ink);
 }
-.arity-chips button.on { background: var(--ink); color: #f6ecd6; }
+.arity-chips button.on { background: var(--accent); border-color: var(--accent-dark); color: #fff; }
 
 .btn-primary, .btn-ghost, .btn-install {
   border-radius: 999px; padding: calc(.7 * var(--u)) calc(2 * var(--u)); font-size: calc(1.4 * var(--u));
 }
-.btn-primary { background: #c4433a; color: #fff !important; border: 3px solid var(--ink); }
-.btn-ghost { background: transparent; border: 3px solid var(--ink); }
-.btn-install { background: var(--ink); color: #f6ecd6 !important; border: 3px solid var(--ink); }
+.btn-primary { background: var(--accent); color: #fff !important; border: 3px solid var(--accent-dark); }
+.btn-ghost { background: transparent; border: 3px solid var(--accent-dark, var(--ink)); color: var(--accent-dark, var(--ink)) !important; }
+.btn-install { background: var(--accent-dark); color: #f6ecd6 !important; border: 3px solid var(--accent-dark); }
 .btn-primary:disabled, .btn-install:disabled { opacity: .45; }
 
-/* Ficha de símbolo */
+/* Ficha de símbolo: una pequeña máquina dibujada a tinta, como el boceto de Turing.
+   Panel de papel con doble contorno de marcador, tornillos en las esquinas, entradas
+   (enchufes) arriba según la aridad, y a la derecha una salida (función) o un foco
+   (predicado). Un toque de resaltador marca el tipo: amarillo funciones, lila predicados.
+   Medidas en var(--u) y nada se comprime: el texto no se parte ni se encoge. */
 .tile {
-  position: relative; width: calc(11.5 * var(--u)); padding-top: calc(1 * var(--u));
+  --ink-blue: #1c2350;
+  --paper: #fbf3df;
+  position: relative; flex: none; width: calc(11.5 * var(--u)); padding-top: calc(1.1 * var(--u));
 }
+.tile-functions { --hl: rgba(255, 205, 40, .6); }
+.tile-predicates { --hl: rgba(190, 140, 200, .55); }
 .tile-body {
-  position: relative; display: grid; gap: calc(.15 * var(--u)); justify-items: center;
-  padding: calc(.7 * var(--u)) calc(.8 * var(--u)) calc(.6 * var(--u));
-  background: linear-gradient(#e8c178, #c9974a); border: 3px solid var(--ink); border-radius: calc(1 * var(--u));
-  box-shadow: inset 0 3px 0 rgba(255, 240, 200, .6), 0 calc(.4 * var(--u)) 0 rgba(29, 26, 51, .35);
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(.35 * var(--u)); min-height: calc(10.5 * var(--u));
+  padding: calc(1.6 * var(--u)) calc(1 * var(--u)) calc(1.2 * var(--u));
+  color: var(--ink-blue); font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle, rgba(28, 35, 80, .22) 0 20%, transparent 24%),  /* tornillos: tenues y chicos, para no confundirse con las entradas */
+    radial-gradient(circle, rgba(28, 35, 80, .22) 0 20%, transparent 24%),
+    radial-gradient(circle, rgba(28, 35, 80, .22) 0 20%, transparent 24%),
+    radial-gradient(circle, rgba(28, 35, 80, .22) 0 20%, transparent 24%),
+    linear-gradient(rgba(28, 35, 80, .06) 1px, transparent 1px),      /* cuadrícula de dibujo técnico */
+    linear-gradient(90deg, rgba(28, 35, 80, .06) 1px, transparent 1px);
+  background-size:
+    calc(.9 * var(--u)) calc(.9 * var(--u)), calc(.9 * var(--u)) calc(.9 * var(--u)),
+    calc(.9 * var(--u)) calc(.9 * var(--u)), calc(.9 * var(--u)) calc(.9 * var(--u)),
+    calc(1 * var(--u)) calc(1 * var(--u)), calc(1 * var(--u)) calc(1 * var(--u));
+  background-position:
+    calc(.35 * var(--u)) calc(.35 * var(--u)), calc(100% - .35 * var(--u)) calc(.35 * var(--u)),
+    calc(.35 * var(--u)) calc(100% - .35 * var(--u)), calc(100% - .35 * var(--u)) calc(100% - .35 * var(--u)),
+    0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
+  border: 2.5px solid var(--ink-blue);
+  border-radius: calc(.9 * var(--u)) calc(.6 * var(--u)) calc(1 * var(--u)) calc(.5 * var(--u));
+  /* segundo contorno interior, como un panel dibujado */
+  box-shadow: inset 0 0 0 calc(.45 * var(--u)) var(--paper), inset 0 0 0 calc(.45 * var(--u) + 1.5px) rgba(28, 35, 80, .55),
+              calc(.25 * var(--u)) calc(.35 * var(--u)) calc(.5 * var(--u)) rgba(29, 26, 51, .25);
 }
-.tile-predicates .tile-body { background: linear-gradient(#7fb7a8, #3f7f72); color: #f6ecd6; }
-.tile-kind { font-size: calc(.95 * var(--u)); text-transform: uppercase; letter-spacing: .08em; opacity: .75; }
-.tile-name { font-size: calc(2.3 * var(--u)); line-height: 1; }
-.tile-sig { font-family: var(--mono); font-size: calc(1.05 * var(--u)); }
-.tile-godel { font-size: calc(.95 * var(--u)); opacity: .8; }
+.tile-kind { font-size: calc(1 * var(--u)); line-height: 1; text-transform: uppercase; letter-spacing: .08em; opacity: .7; white-space: nowrap; }
+.tile-name {
+  font-size: calc(2.6 * var(--u)); line-height: 1.05; padding: 0 calc(.5 * var(--u)); white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  background: linear-gradient(transparent 50%, var(--hl) 50% 92%, transparent 92%); /* resaltador */
+}
+.tile-sig { font-family: var(--mono); font-size: calc(1 * var(--u)); line-height: 1.2; color: var(--ink-blue); white-space: nowrap; }
+/* Número de Gödel: escrito a mano dentro de una etiqueta dibujada */
+.tile-godel {
+  font-size: calc(1.05 * var(--u)); line-height: 1; white-space: nowrap; padding: calc(.2 * var(--u)) calc(.6 * var(--u));
+  border: 1.5px solid var(--ink-blue); border-radius: calc(.3 * var(--u)); rotate: -3deg; opacity: .85;
+}
 
-/* Entradas: una por argumento, sobre el borde superior */
-.tile-sockets { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: center; gap: calc(.8 * var(--u)); z-index: 1; }
+/* Piezas con globo explicativo (ver components/vn/Tip.tsx) */
+.has-tip, .tile-socket { cursor: help; outline: none; }
+.has-tip:focus-visible, .tile-socket:focus-visible { box-shadow: 0 0 0 3px rgba(122, 53, 102, .45); }
+/* En el estante no hay globos: sin cursor de ayuda */
+.tile-sm .has-tip, .tile-sm .tile-socket { cursor: default; }
+.tile-output, .tile-bulb, .tile-socket { z-index: 1; }
+
+/* Globo dibujado a mano. Vive en <body> (posición fija), así que usa px. */
+.hand-tip {
+  position: fixed; z-index: 1000; translate: -50% calc(-100% - 10px); pointer-events: none;
+  max-width: 260px; width: max-content; padding: 8px 12px;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: 16px; line-height: 1.3; text-align: center; color: #1c2350;
+  background: #fffaf0; border: 2px solid #1c2350; border-radius: 12px 4px 14px 5px;
+  box-shadow: 3px 4px 0 rgba(29, 26, 51, .25); rotate: 1deg;
+  animation: tip-in .12s ease-out;
+}
+.hand-tip.is-below { translate: -50% 10px; }
+.hand-tip b { font-weight: 400; background: linear-gradient(transparent 55%, rgba(255, 205, 40, .6) 55% 90%, transparent 90%); }
+.hand-tip small { font-size: 13px; opacity: .7; }
+.hand-tip sup { font-size: .75em; }
+@keyframes tip-in { from { opacity: 0; } }
+
+/* Entradas: un enchufe dibujado por argumento, sobre el borde superior */
+.tile-sockets { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: center; gap: calc(.9 * var(--u)); z-index: 1; }
 .tile-socket {
   width: calc(1.5 * var(--u)); height: calc(1.5 * var(--u)); border-radius: 50%;
-  background: #2b2a3d; border: 3px solid var(--ink); box-shadow: inset 0 0 0 calc(.3 * var(--u)) #9a9ab0;
-  transform: translateY(35%);
+  border: 2.5px solid var(--ink-blue);
+  background: radial-gradient(circle, var(--ink-blue) 0 26%, var(--paper) 30%);
+  transform: translateY(30%);
 }
-/* Salida (función) o foco (predicado) en el lado derecho */
-.tile-output, .tile-bulb { position: absolute; right: calc(-1.1 * var(--u)); top: 55%; transform: translateY(-50%); }
+/* Salida (función): boquilla con flecha. Foco (predicado): bombilla con resaltador. */
+.tile-output, .tile-bulb { position: absolute; top: 60%; transform: translateY(-50%); }
 .tile-output {
-  width: calc(1.4 * var(--u)); height: calc(1.4 * var(--u)); background: #c9974a; border: 3px solid var(--ink);
-  clip-path: polygon(0 0, 100% 50%, 0 100%); border-radius: 2px;
+  right: calc(-1.7 * var(--u)); width: calc(1.9 * var(--u)); height: calc(1.4 * var(--u)); background: var(--ink-blue);
+  clip-path: polygon(0 36%, 55% 36%, 55% 0, 100% 50%, 55% 100%, 55% 64%, 0 64%);
 }
 .tile-bulb {
-  width: calc(1.6 * var(--u)); height: calc(1.6 * var(--u)); border-radius: 50%; border: 3px solid var(--ink);
-  background: radial-gradient(circle at 35% 35%, #fff7c2, #ffc93c 60%, #d98d10);
-  box-shadow: 0 0 calc(.8 * var(--u)) rgba(255, 201, 60, .8);
+  right: calc(-1.2 * var(--u)); width: calc(1.6 * var(--u)); height: calc(1.6 * var(--u)); border-radius: 50%;
+  border: 2.5px solid var(--ink-blue); background: var(--paper);
+  box-shadow: inset 0 0 0 calc(.25 * var(--u)) rgba(255, 205, 40, .85);
+}
+.tile-bulb::before { /* rayitos dibujados alrededor */
+  content: ''; position: absolute; inset: calc(-.55 * var(--u)); border-radius: 50%;
+  border: 1.5px dashed var(--ink-blue); opacity: .55;
 }
 .tile-remove {
   position: absolute; top: calc(.4 * var(--u)); right: calc(-.6 * var(--u)); z-index: 2;
   width: calc(2 * var(--u)); height: calc(2 * var(--u)); padding: 0; border-radius: 50%;
-  background: #fffaf0; border: 2px solid var(--ink); color: var(--ink); font-size: calc(1.3 * var(--u)); line-height: 1;
+  background: var(--paper); border: 2px solid var(--ink-blue); color: var(--ink-blue); font-size: calc(1.3 * var(--u)); line-height: 1;
   opacity: 0; transition: opacity .15s;
 }
 .tile:hover .tile-remove, .tile-remove:focus-visible { opacity: 1; }
-.tile.has-error .tile-body { border-color: #c4433a; box-shadow: 0 0 0 3px #c4433a, 0 calc(.4 * var(--u)) 0 rgba(29, 26, 51, .35); animation: tile-shake .4s; }
+.tile.has-error .tile-body { border: 2.5px dashed #b0332a; animation: tile-shake .4s; }
 @keyframes tile-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .tile-error { margin: calc(.5 * var(--u)) 0 0; font-size: calc(1 * var(--u)); color: #b0332a; line-height: 1.25; text-align: center; }
 
 /* Tamaños de ficha */
-.tile-sm { width: calc(8.5 * var(--u)); }
+/* Ficha chica (estante): se ajusta a la altura disponible para no recortarse con zoom
+   o en pantallas bajas. 100cqh = alto útil del estante. */
+/* ancho mínimo fijo, pero crece si el nombre es largo: nunca se corta */
+.tile-sm { width: max-content; min-width: min(9.5 * var(--u), 78cqh); padding-top: min(1.1 * var(--u), 11cqh); }
+.tile-sm .tile-name { max-width: none; overflow: visible; }
 .tile-sm .tile-kind, .tile-sm .tile-godel { display: none; }
-.tile-sm .tile-name { font-size: calc(1.8 * var(--u)); }
-.tile-sm .tile-sig { font-size: calc(.9 * var(--u)); }
+.tile-sm .tile-body {
+  min-height: 0; height: min(7.4 * var(--u), 100cqh - min(1.1 * var(--u), 11cqh) - 4px);
+  gap: min(.35 * var(--u), 3cqh); padding: min(1.5 * var(--u), 15cqh) min(.8 * var(--u), 7cqh) min(1 * var(--u), 9cqh);
+}
+.tile-sm .tile-name { font-size: min(2.1 * var(--u), 22cqh); }
+.tile-sm .tile-sig { font-size: min(.9 * var(--u), 9.5cqh); }
+.tile-sm .tile-socket { width: min(1.3 * var(--u), 13cqh); height: min(1.3 * var(--u), 13cqh); border-width: 2px; }
+.tile-sm .tile-sockets { gap: min(.9 * var(--u), 8cqh); }
+.tile-sm .tile-output { right: calc(-1 * min(1.7 * var(--u), 16cqh)); width: min(1.9 * var(--u), 18cqh); height: min(1.4 * var(--u), 13cqh); }
+.tile-sm .tile-bulb { width: min(1.6 * var(--u), 15cqh); height: min(1.6 * var(--u), 15cqh); right: calc(-1 * min(1.2 * var(--u), 11cqh)); }
 .tile-sm .tile-error { position: absolute; left: 0; right: 0; top: 100%; font-size: calc(.85 * var(--u)); }
-.tile-lg { width: calc(16 * var(--u)); padding-top: calc(1.3 * var(--u)); }
-.tile-lg .tile-body { padding-top: calc(1.6 * var(--u)); }
-.tile-lg .tile-name { font-size: calc(3.4 * var(--u)); }
-.tile-lg .tile-sig { font-size: calc(1.3 * var(--u)); }
-.tile-lg .tile-socket { width: calc(2 * var(--u)); height: calc(2 * var(--u)); }
+/* Vista previa: llena su mitad de la tarjeta de pasos */
+.tile-lg { width: min(100%, calc(24 * var(--u))); padding-top: calc(1.6 * var(--u)); }
+/* Alto pensado para caber dentro de la tarjeta de pasos aun en pantallas bajas o con zoom. */
+.tile-lg .tile-body { min-height: calc(15 * var(--u)); gap: calc(.6 * var(--u)); padding: calc(2.4 * var(--u)) calc(1.4 * var(--u)) calc(1.4 * var(--u)); }
+.tile-lg .tile-kind { font-size: calc(1.4 * var(--u)); }
+/* Nombres largos se achican en proporción a su longitud (--len), en vez de cortarse. */
+.tile-lg .tile-name { font-size: calc(5 * var(--u) * min(1, 4 / var(--len, 1))); }
+.tile-lg .tile-sig { font-size: calc(1.7 * var(--u)); }
+.tile-lg .tile-godel { font-size: calc(1.5 * var(--u)); }
+.tile-lg .tile-socket { width: calc(2.4 * var(--u)); height: calc(2.4 * var(--u)); }
+.tile-lg .tile-sockets { gap: calc(1.4 * var(--u)); }
+.tile-lg .tile-output { right: calc(-2.3 * var(--u)); width: calc(2.6 * var(--u)); height: calc(1.9 * var(--u)); }
+.tile-lg .tile-bulb { right: calc(-1.5 * var(--u)); width: calc(2.2 * var(--u)); height: calc(2.2 * var(--u)); }

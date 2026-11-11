@@ -20,7 +20,7 @@ import { useMachine } from '../store/machine';
 
 type Choice = 'function' | 'constant' | 'predicate';
 type Step = 'type' | 'name' | 'arity' | 'confirm' | 'next';
-type Phase = 'intro' | 'build' | 'error' | 'done';
+type Phase = 'intro' | 'build' | 'error' | 'warn' | 'example' | 'done';
 
 interface Line { expression: Expression; text: string }
 
@@ -32,11 +32,27 @@ const INTRO: Line[] = [
 const STEP_LINES: Record<Step, Line> = {
   type: { expression: 'talk', text: '¿Qué quieres fabricar? Las funciones devuelven un elemento; los predicados afirman algo, verdadero o falso.' },
   name: { expression: 'neutral', text: 'Ponle un nombre. Una letra basta.' },
-  arity: { expression: 'talk', text: '¿Cuántos argumentos recibe? Esa es su aridad: cada argumento es una entrada de la ficha.' },
+  arity: { expression: 'talk', text: '¿Cuántos argumentos recibe? Esa es su aridad: cada círculo de arriba de la ficha es un argumento.' },
   confirm: { expression: 'neutral', text: 'Revisa la ficha. Si está bien, fabrícala.' },
   next: { expression: 'happy', text: '¡Ficha lista! ¿Fabricamos otra o instalamos el lenguaje?' },
 };
+/** En el paso de revisar, Gödel explica qué significa cada pieza de la ficha según su tipo. */
+const CONFIRM_LINES: Record<Choice, Line> = {
+  function: { expression: 'talk', text: 'Los círculos de arriba son sus argumentos; la flecha es su salida: devuelve un elemento, f : Dⁿ → D.' },
+  constant: { expression: 'talk', text: 'Sin círculos: no recibe argumentos. Solo tiene la flecha de salida, porque nombra un elemento fijo, c ∈ D.' },
+  predicate: { expression: 'talk', text: 'Los círculos de arriba son sus argumentos; el foco se enciende si lo que afirma es verdadero, P ⊆ Dⁿ.' },
+};
 const DONE: Line = { expression: 'happy', text: 'Un lenguaje impecable. Ahora Tarski le dará significado a cada símbolo.' };
+/** Si intenta instalar sin predicados, Gödel lo detiene y explica por qué. */
+const NO_PREDICATE: Line = { expression: 'confused', text: 'Espera: te falta al menos un predicado. Sin ellos no hay nada que pueda ser verdadero o falso. Fabrica uno, como P(x).' };
+const EXAMPLE_LINE: Line = { expression: 'happy', text: 'Te dejé un lenguaje clásico en el estante: f, la constante c, P y R. Puedes cambiarlo o instalarlo tal cual.' };
+
+/** Lenguaje de ejemplo para la demo: una función, una constante y dos predicados. */
+const EXAMPLE_LANGUAGE = {
+  functions: [{ name: 'f', arity: 1 }, { name: 'c', arity: 0 }],
+  predicates: [{ name: 'P', arity: 1 }, { name: 'R', arity: 2 }],
+};
+const LEAVE_MS = 1100; // duración de la salida hacia la Sala de Tarski
 
 const CHOICES: Array<{ id: Choice; title: string; desc: string; example: string }> = [
   { id: 'function', title: 'Función', desc: 'Recibe argumentos y devuelve un elemento del dominio.', example: 'f(x)' },
@@ -62,6 +78,7 @@ export function LanguageWorkshop() {
   const [talking, setTalking] = useState(false);
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [busy, setBusy] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [bg, setBg] = useState(BG);
 
   // Ficha en fabricación
@@ -88,27 +105,42 @@ export function LanguageWorkshop() {
     phase === 'intro' ? INTRO[line]
     : phase === 'done' ? DONE
     : phase === 'error' ? { expression: 'confused', text: errorLine(errors) }
+    : phase === 'warn' ? NO_PREDICATE
+    : phase === 'example' ? EXAMPLE_LINE
+    : step === 'confirm' ? CONFIRM_LINES[choice]
     : STEP_LINES[step];
 
   const advanceDialog = () => {
     if (phase === 'intro') {
       if (line < INTRO.length - 1) setLine(line + 1);
       else setPhase('build');
-    } else if (phase === 'done') {
-      markReady('language');
-      navigate('/universo');
+    } else if (phase === 'done' && !leaving) {
+      // Salida animada: las fichas se archivan, Gödel se despide y se pasa a Tarski.
+      setLeaving(true);
+      setTimeout(() => {
+        markReady('language');
+        navigate('/universo');
+      }, LEAVE_MS);
     }
   };
 
   const changeLanguage = (next: typeof language) => {
     setLanguage(next);
     setErrors([]);
-    if (phase === 'error' || phase === 'done') setPhase('build');
+    if (phase !== 'intro') setPhase('build');
   };
 
   const go = (s: Step) => {
     setStep(s);
-    if (phase === 'error') setPhase('build');
+    if (phase === 'error' || phase === 'warn' || phase === 'example') setPhase('build');
+  };
+
+  /** Carga un lenguaje listo (útil en la demo) y Gödel lo anuncia. */
+  const loadExample = () => {
+    setLanguage(EXAMPLE_LANGUAGE);
+    setErrors([]);
+    setStep('next');
+    setPhase('example');
   };
   const back = () => go(steps[Math.max(0, stepIndex - 1)]);
   const forward = () => go(steps[stepIndex + 1]);
@@ -129,6 +161,11 @@ export function LanguageWorkshop() {
     changeLanguage({ ...language, [k]: language[k].filter((_, j) => j !== i) });
 
   const install = async () => {
+    // Sin predicados no hay fórmulas posibles: Gödel lo dice en vez de un botón gris.
+    if (language.predicates.length === 0) {
+      setPhase('warn');
+      return;
+    }
     setBusy(true);
     const res = await api.validateLanguage(language);
     setBusy(false);
@@ -141,7 +178,6 @@ export function LanguageWorkshop() {
   };
 
   const errorFor = (k: SymbolKind, i: number) => errors.find((e) => e.path === `language.${k}[${i}]`)?.message;
-  const noPredicates = language.predicates.length === 0;
   const total = language.functions.length + language.predicates.length;
   const example = choice === 'constant' ? trimmed || 'c' : `${trimmed || '?'}(${VARS.slice(0, arity).join(', ')})`;
 
@@ -158,13 +194,18 @@ export function LanguageWorkshop() {
       {phase !== 'intro' && (
         <>
           {/* Estante: todo lo fabricado hasta ahora */}
-          <motion.div className="shelf" initial={{ y: '-30%', opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <motion.div className="shelf" initial={{ y: '-30%', opacity: 0 }}
+            // Al salir, el estante "vuela" hacia los archiveros del fondo.
+            animate={leaving ? { x: '55%', y: '-40%', scale: 0.35, rotate: 8, opacity: 0 } : { y: 0, opacity: 1 }}
+            transition={leaving ? { duration: 0.8, ease: [0.5, 0, 0.75, 0] } : undefined}>
             <div className="shelf-head">
               <h2>Tus símbolos <span>({total})</span></h2>
-              <button type="button" className="btn-install" onClick={install} disabled={busy || noPredicates || phase === 'done'}
-                title={noPredicates ? 'Necesitas al menos un predicado' : undefined}>
-                {busy ? 'Verificando…' : 'Instalar lenguaje'}
-              </button>
+              <div className="shelf-actions">
+                <button type="button" className="btn-ghost btn-small" onClick={loadExample} disabled={phase === 'done'}>Usar ejemplo</button>
+                <button type="button" className="btn-install" onClick={install} disabled={busy || total === 0 || phase === 'done'}>
+                  {busy ? 'Verificando…' : 'Instalar lenguaje'}
+                </button>
+              </div>
             </div>
             <div className="shelf-tiles">
               <AnimatePresence>
@@ -179,7 +220,9 @@ export function LanguageWorkshop() {
           </motion.div>
 
           {/* Tarjeta de pasos: una sola pregunta a la vez */}
-          <motion.div className="step-card" initial={{ y: '10%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+          <motion.div className="step-card" initial={{ y: '10%', opacity: 0 }}
+            animate={leaving ? { y: '25%', opacity: 0 } : { y: 0, opacity: 1 }}
+            transition={leaving ? { duration: 0.45, ease: 'easeIn' } : { delay: 0.1 }}>
             {step !== 'next' && (
               <ol className="step-progress" aria-label="Pasos">
                 {steps.map((s, i) => (
@@ -260,12 +303,11 @@ export function LanguageWorkshop() {
                   <div className="step-next">
                     <span className="step-label">Ficha guardada en el estante.</span>
                     <div className="step-actions">
-                      <button type="button" className="btn-primary" onClick={() => go('type')}>Fabricar otro símbolo</button>
-                      <button type="button" className="btn-install" onClick={install} disabled={busy || noPredicates || phase === 'done'}>
+                      <button type="button" className="btn-ghost" onClick={() => go('type')}>Fabricar otro símbolo</button>
+                      <button type="button" className="btn-install" onClick={install} disabled={busy || phase === 'done'}>
                         {busy ? 'Verificando…' : 'Instalar lenguaje'}
                       </button>
                     </div>
-                    {noPredicates && <p className="step-help">Para instalar necesitas al menos un predicado: sin ellos no se puede escribir ninguna fórmula.</p>}
                   </div>
                 )}
               </motion.div>
@@ -274,12 +316,14 @@ export function LanguageWorkshop() {
         </>
       )}
 
-      <Character name="godel" side="right" expression={current.expression}
-        beat={phase === 'intro' ? line : phase === 'build' ? 10 + steps.indexOf(step) + (step === 'next' ? 20 : 0) : phase === 'error' ? 100 + errors.length : 200}
+      <Character name="godel" side="right" expression={current.expression} leaving={leaving}
+        beat={phase === 'intro' ? line : phase === 'build' ? 10 + steps.indexOf(step) + (step === 'next' ? 20 : 0) : phase === 'error' ? 100 + errors.length : phase === 'warn' ? 300 : phase === 'example' ? 400 : 200}
         talking={talking} />
 
+      <motion.div className="vn-dialog-wrap" animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4, delay: leaving ? 0.5 : 0 }}>
       <DialogBox speaker="Kurt Gödel" side="right" text={current.text}
         canAdvance={phase === 'intro' || phase === 'done'} onAdvance={advanceDialog} onTypingChange={setTalking} />
+      </motion.div>
     </section>
   );
 }

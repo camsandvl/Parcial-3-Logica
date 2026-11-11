@@ -81,7 +81,7 @@ export function Activation() {
   );
 
   return (
-    <section className={`vn-scene ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
+    <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>
