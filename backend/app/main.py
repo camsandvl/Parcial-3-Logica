@@ -1,4 +1,4 @@
-"""Aplicación HTTP del backend semántico."""
+"""Aplicación HTTP del backend semántico y de sintaxis."""
 
 from __future__ import annotations
 
@@ -7,27 +7,32 @@ from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import Database
 from app.semantics.evaluator import evaluate
-from app.semantics.interpretation import validate_interpretation
+from app.semantics.explain import summary
+from app.semantics.interpretation import validate_environment, validate_interpretation
+from app.syntax import free_vars, parse, router as syntax_router, to_string, validate_language
 
 app = FastAPI(title="La Máquina de Turing")
-database = Database(os.getenv("LOGIC_DATABASE", "backend/data/logic.db"))
-NAME = r"^[A-Za-z][A-Za-z0-9_]*$"
-VARIABLE = r"^[xyzw]\d*$"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+database = Database(os.getenv("LOGIC_DATABASE"))
+app.include_router(syntax_router)
 
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _parser():
-    try:
-        from app.syntax import parse
-    except ModuleNotFoundError:
-        return None
-    return parse
+def _failure(errors: list[dict[str, Any]]) -> dict[str, Any]:
+    return {"ok": False, "errors": errors}
 
 
 @app.get("/")
@@ -35,109 +40,66 @@ def root() -> dict[str, str]:
     return {"name": "La Máquina de Turing API", "status": "ok", "docs": "/docs"}
 
 
-@app.post("/api/language/validate")
-def language_validate(language: dict[str, Any]) -> dict[str, Any]:
-    import re
-
-    errors: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for kind in ("functions", "predicates"):
-        for index, symbol in enumerate(language.get(kind, [])):
-            name = symbol.get("name", "")
-            path = f"language.{kind}[{index}]"
-            if not re.fullmatch(NAME, name) or re.fullmatch(VARIABLE, name):
-                errors.append({
-                    "code": "INVALID_LANGUAGE",
-                    "stage": "language",
-                    "message": f'"{name}" no es un nombre válido',
-                    "path": path,
-                })
-            if name in seen:
-                errors.append({
-                    "code": "INVALID_LANGUAGE",
-                    "stage": "language",
-                    "message": f'"{name}" está repetido',
-                    "path": path,
-                })
-            seen.add(name)
-            minimum = 1 if kind == "predicates" else 0
-            if not isinstance(symbol.get("arity"), int) or symbol["arity"] < minimum:
-                errors.append({
-                    "code": "INVALID_LANGUAGE",
-                    "stage": "language",
-                    "message": f"La aridad de {name} debe ser un entero >= {minimum}",
-                    "path": path,
-                })
-    return {"ok": True} if not errors else {"ok": False, "errors": errors}
-
-
-@app.post("/api/parse")
-def parse_formula(payload: dict[str, Any]) -> dict[str, Any]:
-    parser = _parser()
-    if parser is None:
-        return {
-            "ok": False,
-            "errors": [{
-                "code": "SYNTAX_ERROR",
-                "stage": "syntax",
-                "message": "El parser de Emily todavía no está integrado.",
-                "path": "formula",
-            }],
-        }
-    return parser(payload.get("formula", ""), payload.get("language", {}))
-
-
 @app.post("/api/interpretation/validate")
 def interpretation_validate(payload: dict[str, Any]) -> dict[str, Any]:
-    errors = validate_interpretation(payload.get("language", {}), payload.get("interpretation", {}))
-    return {"ok": True} if not errors else {"ok": False, "errors": errors}
+    language = payload.get("language", {})
+    interpretation = payload.get("interpretation", {})
+    language_errors = validate_language(language)
+    if language_errors:
+        return _failure(language_errors)
+    errors = validate_interpretation(language, interpretation)
+    return {"ok": True} if not errors else _failure(errors)
 
 
 @app.post("/api/evaluate")
 def evaluate_formula(payload: dict[str, Any]) -> dict[str, Any]:
     language = payload.get("language", {})
     interpretation = payload.get("interpretation", {})
+    language_errors = validate_language(language)
+    if language_errors:
+        return _failure(language_errors)
+
     interpretation_errors = validate_interpretation(language, interpretation)
     if interpretation_errors:
-        return {"ok": False, "errors": interpretation_errors}
+        return _failure(interpretation_errors)
 
-    ast = payload.get("ast")
     formula = payload.get("formula", "")
+    ast = payload.get("ast")
+    free = free_vars(ast) if isinstance(ast, dict) else None
     if ast is None:
-        parser = _parser()
-        if parser is None:
-            return {
-                "ok": False,
-                "errors": [{
-                    "code": "SYNTAX_ERROR",
-                    "stage": "syntax",
-                    "message": "El parser todavía no está disponible; envía un AST para probar la semántica.",
-                    "path": "formula",
-                }],
-            }
-        parsed = parser(formula, language)
+        parsed = parse(formula, language)
         if not parsed["ok"]:
             return parsed
         ast = parsed["ast"]
+        free = parsed["freeVars"]
 
     environment = payload.get("environment", {})
+    environment_errors = validate_environment(free or [], environment, interpretation["domain"])
+    if environment_errors:
+        return _failure(environment_errors)
+
     try:
-        value, trace = evaluate(ast, interpretation, environment)
+        value, trace = evaluate(ast, language, interpretation, environment)
     except (KeyError, ValueError) as error:
-        return {
-            "ok": False,
-            "errors": [{
-                "code": "MISSING_ASSIGNMENT",
-                "stage": "environment",
-                "message": str(error),
-                "path": "environment",
-            }],
-        }
-    summary = f"{formula or 'Fórmula'} es {'Verdadero' if value else 'Falso'}"
+        return _failure([{
+            "code": "MISSING_ASSIGNMENT",
+            "stage": "environment",
+            "message": str(error),
+            "path": "environment",
+        }])
+
+    formula_text = formula or to_string(ast)
+    result_summary = summary(formula_text, value, trace)
+
     database.add_history(
-        created_at=_now(), formula=formula, value=value, summary=summary, trace=trace
+        created_at=_now(),
+        formula=formula_text,
+        environment=environment,
+        value=value,
+        summary=result_summary,
+        trace=trace,
     )
-    return {"ok": True, "value": value, "summary": summary, "trace": trace}
+    return {"ok": True, "value": value, "summary": result_summary, "trace": trace}
 
 
 @app.get("/api/history")
@@ -155,12 +117,17 @@ def save_scenario(payload: dict[str, Any]) -> dict[str, Any]:
     name = payload.get("name", "").strip()
     if not name:
         raise HTTPException(status_code=400, detail="El nombre del escenario es obligatorio")
-    errors = validate_interpretation(payload.get("language", {}), payload.get("interpretation", {}))
+    language = payload.get("language", {})
+    interpretation = payload.get("interpretation", {})
+    language_errors = validate_language(language)
+    if language_errors:
+        return _failure(language_errors)
+    errors = validate_interpretation(language, interpretation)
     if errors:
-        return {"ok": False, "errors": errors}
+        return _failure(errors)
     return database.save_scenario(
         name=name,
-        language=payload["language"],
-        interpretation=payload["interpretation"],
+        language=language,
+        interpretation=interpretation,
         created_at=_now(),
     )

@@ -4,8 +4,9 @@ Este avance implementa la parte de Ale sin depender todavía del parser de Emily
 
 - `app/semantics/interpretation.py` valida dominio, funciones y predicados.
 - `app/semantics/evaluator.py` evalúa un AST y construye una traza con testigos y contraejemplos.
-- `app/db/database.py` crea una base SQLite con tablas `history` y `scenarios`.
+- `app/db/database.py` crea una base SQLite con tablas `operations` y `scenarios`.
 - `app/main.py` expone los endpoints semánticos y de persistencia.
+- `app/syntax/` contiene el parser integrado de Emily y sus endpoints.
 
 ## Ejecutar
 

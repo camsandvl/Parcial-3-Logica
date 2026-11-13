@@ -12,7 +12,9 @@ from typing import Any
 class Database:
     """Repositorio pequeño y explícito para la información persistente de la app."""
 
-    def __init__(self, path: str | Path = "backend/data/logic.db") -> None:
+    def __init__(self, path: str | Path | None = None) -> None:
+        if path is None:
+            path = Path(__file__).resolve().parents[2] / "data" / "logic.db"
         self.path = Path(path)
         if self.path != Path(":memory:"):
             self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -28,10 +30,11 @@ class Database:
         with self._lock, self._connect() as connection:
             connection.executescript(
                 """
-                CREATE TABLE IF NOT EXISTS history (
+                CREATE TABLE IF NOT EXISTS operations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     created_at TEXT NOT NULL,
                     formula TEXT NOT NULL,
+                    environment_json TEXT NOT NULL,
                     value INTEGER,
                     summary TEXT NOT NULL,
                     trace_json TEXT NOT NULL
@@ -45,12 +48,65 @@ class Database:
                 );
                 """
             )
+            self._seed_scenarios(connection)
+
+    @staticmethod
+    def _seed_scenarios(connection: sqlite3.Connection) -> None:
+        scenarios = [
+            (
+                "Aritmética módulo 3",
+                {"functions": [{"name": "s", "arity": 1}], "predicates": [{"name": "Z", "arity": 1}]},
+                {
+                    "domain": ["0", "1", "2"],
+                    "functions": {
+                        "s": [[["0"], "1"], [["1"], "2"], [["2"], "0"]]
+                    },
+                    "predicates": {"Z": [["0"]]},
+                },
+            ),
+            (
+                "Grafo pequeño",
+                {"functions": [], "predicates": [{"name": "E", "arity": 2}]},
+                {
+                    "domain": ["A", "B", "C"],
+                    "functions": {},
+                    "predicates": {"E": [["A", "B"], ["B", "C"]]},
+                },
+            ),
+            (
+                "Orden en {1,2,3}",
+                {"functions": [], "predicates": [{"name": "Menor", "arity": 2}]},
+                {
+                    "domain": ["1", "2", "3"],
+                    "functions": {},
+                    "predicates": {
+                        "Menor": [["1", "2"], ["1", "3"], ["2", "3"]]
+                    },
+                },
+            ),
+        ]
+        created_at = "2026-01-01T00:00:00+00:00"
+        for name, language, interpretation in scenarios:
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO scenarios
+                    (name, language_json, interpretation_json, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    name,
+                    json.dumps(language, ensure_ascii=False),
+                    json.dumps(interpretation, ensure_ascii=False),
+                    created_at,
+                ),
+            )
 
     def add_history(
         self,
         *,
         created_at: str,
         formula: str,
+        environment: dict[str, str],
         value: bool,
         summary: str,
         trace: dict[str, Any],
@@ -58,10 +114,18 @@ class Database:
         with self._lock, self._connect() as connection:
             cursor = connection.execute(
                 """
-                INSERT INTO history (created_at, formula, value, summary, trace_json)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO operations
+                    (created_at, formula, environment_json, value, summary, trace_json)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (created_at, formula, int(value), summary, json.dumps(trace, ensure_ascii=False)),
+                (
+                    created_at,
+                    formula,
+                    json.dumps(environment, ensure_ascii=False),
+                    int(value),
+                    summary,
+                    json.dumps(trace, ensure_ascii=False),
+                ),
             )
             return {
                 "id": cursor.lastrowid,
@@ -76,7 +140,7 @@ class Database:
             rows = connection.execute(
                 """
                 SELECT id, created_at, formula, value, summary
-                FROM history ORDER BY id DESC
+                FROM operations ORDER BY id DESC
                 """
             ).fetchall()
         return [
