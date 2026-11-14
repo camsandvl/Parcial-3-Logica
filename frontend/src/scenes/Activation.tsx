@@ -5,6 +5,7 @@ import { Character, characterImages, type Expression } from '../components/vn/Ch
 import { DialogBox } from '../components/vn/DialogBox';
 import { Machine } from '../components/vn/Machine';
 import { useMachine } from '../store/machine';
+import { SceneInfo } from '../components/vn/SceneInfo';
 import { preloadImages } from '../utils/preload';
 
 interface Line {
@@ -23,6 +24,8 @@ const SCRIPT: Line[] = [
   { expression: 'happy', text: '¡Mira cómo cobra vida! Así razona la máquina: lee, escribe y cambia de estado. Vamos al taller de Gödel.' },
 ];
 
+const LEAVE_MS = 1100; // duración de la salida hacia el Taller de Gödel
+
 /** A partir de esta línea la nota se despega de la pared y queda al frente, grande. */
 const NOTE_BIG_FROM = 1;
 
@@ -32,6 +35,7 @@ export function Activation() {
   const [line, setLine] = useState(0);
   const [on, setOn] = useState(false);
   const [talking, setTalking] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const shake = useAnimationControls();
   const current = SCRIPT[line];
   const big = line >= NOTE_BIG_FROM;
@@ -43,9 +47,13 @@ export function Activation() {
 
   const advance = () => {
     if (line < SCRIPT.length - 1) setLine(line + 1);
-    else {
-      markReady('activation');
-      navigate('/lenguaje');
+    else if (!leaving) {
+      // Salida animada (igual que en las otras escenas): la nota se va, Turing sale y se pasa a Gödel.
+      setLeaving(true);
+      setTimeout(() => {
+        markReady('activation');
+        navigate('/lenguaje');
+      }, LEAVE_MS);
     }
   };
 
@@ -82,6 +90,7 @@ export function Activation() {
 
   return (
     <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
+      <SceneInfo place="Laboratorio de computación, Mánchester" fact="Estamos en un laboratorio de computación de la Universidad de Mánchester, hacia 1948, porque ahí trabajó Turing con algunas de las primeras computadoras reales. Los bastidores llenos de válvulas encendidas del fondo eran esas máquinas: ese año la «Manchester Baby» ejecutó por primera vez un programa guardado en su propia memoria." />
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>
@@ -94,11 +103,17 @@ export function Activation() {
       </div>
 
       {/* Después se despega y queda al frente, sobre el área visible y sin oscurecer. */}
-      {big && note}
+      {big && (
+        <motion.div className="vn-note-exit" animate={leaving ? { x: '30%', y: '-20%', scale: 0.4, rotate: 10, opacity: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.5, 0, 0.75, 0] }}>
+          {note}
+        </motion.div>
+      )}
 
       {/* Personaje y diálogo se colocan sobre el área visible, así nunca se recortan. */}
-      <Character name="turing" expression={current.expression} beat={line} talking={talking} />
+      <Character name="turing" expression={current.expression} beat={line} talking={talking} leaving={leaving} />
 
+      <motion.div className="vn-dialog-wrap" animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4, delay: leaving ? 0.5 : 0 }}>
       <DialogBox
         speaker="Alan Turing"
         text={current.text}
@@ -106,6 +121,7 @@ export function Activation() {
         onAdvance={advance}
         onTypingChange={setTalking}
       />
+      </motion.div>
     </section>
   );
 }

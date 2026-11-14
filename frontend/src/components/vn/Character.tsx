@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export type Expression = 'neutral' | 'talk' | 'happy' | 'confused';
-export type CharacterName = 'turing' | 'godel';
+export type CharacterName = 'turing' | 'godel' | 'tarski';
 
 /** Archivo (en public/assets/characters/<nombre>/cutout/) de cada expresión.
  *  Si un personaje no tiene una expresión, se usa la neutral. */
@@ -10,6 +10,7 @@ const FILES: Record<CharacterName, Partial<Record<Expression, string>>> = {
   // Dibujos 2D. Las fotos anteriores quedan en turing/photos/ por si se quieren volver a usar.
   turing: { neutral: 'variation_1_neutral', talk: 'variation_3_hablando', happy: 'variation_2_feliz' },
   godel: { neutral: 'godel-neutral', talk: 'godel-talking', happy: 'godel-happy', confused: 'godel-confused' },
+  tarski: { neutral: 'tarski-neutral', talk: 'tarski-talking', happy: 'tarski-happy', confused: 'tarski-confused' },
 };
 
 /** URLs de todas las expresiones de un personaje (para precargarlas antes de su escena). */
@@ -26,6 +27,8 @@ interface Props {
   side?: 'left' | 'right';
   /** true: sale de escena deslizándose por su lado. */
   leaving?: boolean;
+  /** Clase extra para ubicarlo (p. ej. varios personajes en la misma escena). */
+  className?: string;
 }
 
 /**
@@ -36,7 +39,7 @@ interface Props {
  *   3. mientras habla, rebote corto y balanceo; en reposo, respiración lenta.
  * Las imágenes con contorno se generan con scripts/cutout.py.
  */
-export function Character({ name, expression, beat, talking, side = 'left', leaving = false }: Props) {
+export function Character({ name, expression, beat, talking, side = 'left', leaving = false, className = '' }: Props) {
   const files = FILES[name];
   const current = files[expression] ? expression : 'neutral';
   const tilt = side === 'left' ? 1 : -1;
@@ -50,7 +53,7 @@ export function Character({ name, expression, beat, talking, side = 'left', leav
 
   return (
     <motion.div
-      className={`vn-character vn-character-${side}`}
+      className={`vn-character vn-character-${side} ${className}`}
       initial={{ x: side === 'left' ? '-120%' : '120%' }}
       animate={{ x: leaving ? (side === 'left' ? '-120%' : '120%') : 0 }}
       // Curva que desacelera y termina exactamente en su lugar (un resorte "salta" unos px al detenerse).

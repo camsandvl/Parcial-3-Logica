@@ -43,7 +43,12 @@ button, input, select { font: inherit; color: inherit; }
 @keyframes blink { 50% { opacity: .35; } }
 
 /* Escenas */
-.stage { padding: 32px clamp(16px, 4vw, 48px); min-width: 0; }
+/* El área principal contiene capas superpuestas (una por escena) para el fundido cruzado */
+.stage { position: relative; min-width: 0; min-height: 100vh; overflow: hidden; }
+.route-layer { position: absolute; inset: 0; overflow: auto; }
+.route-layer.is-leaving { pointer-events: none; } /* la escena que se desvanece ya no recibe clics */
+/* Las pantallas que todavía no son escenas de juego conservan su margen */
+.route-layer:not(:has(.vn-scene)) { padding: 32px clamp(16px, 4vw, 48px); }
 .scene { max-width: 1000px; }
 .scene h2 { font-family: var(--display); color: var(--brass); font-weight: 400; }
 .scene { display: grid; gap: 20px; }
@@ -113,7 +118,6 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 /* Las escenas de novela visual llenan todo el área a la derecha del panel, sin marco.
    El escenario 16:9 se escala para cubrirla (como object-fit: cover) y se ancla abajo:
    si el área no es 16:9 se recorta el techo o los costados, nunca la caja de diálogo. */
-.stage:has(.vn-scene) { padding: 0; }
 .vn-scene {
   position: relative; height: 100vh; overflow: clip; background: #2a2350; /* clip: el foco de un campo no puede desplazar la escena */
   container-type: size;
@@ -204,7 +208,7 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-character { position: absolute; bottom: -2%; height: 82%; aspect-ratio: 810 / 1110; pointer-events: none; /* decorativo: no tapa botones */ }
 .vn-character-left { left: 7%; }
 .vn-character-right { right: 2%; }
-.vn-scene-godel .vn-character-right { right: -4%; } /* Gödel un poco más a la orilla */
+.vn-scene-godel .vn-character-right, .vn-scene-tarski .vn-character-right { right: -4%; } /* Gödel un poco más a la orilla */
 /* La caja de diálogo termina antes de Gödel: ancho del personaje (82% de alto × 810/1110) menos lo que sale del borde. */
 .vn-scene-godel .vn-dialog { right: calc(82cqh * 810 / 1110 - 4cqw + 1cqw); }
 /* Sombra del recorte: desplazada hacia abajo-derecha, un poco difusa, en morado oscuro del fondo. */
@@ -242,6 +246,17 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 }
 .vn-scene-turing .vn-nameplate { background: var(--accent); }
 .vn-scene-turing .vn-character { height: 95%; bottom: -8%; left: 2%; } /* Turing más grande, más abajo y a la izquierda (base: 82%, -2%, 7%); se recorta por abajo */
+
+/* Paleta de Tarski: verde pizarra, tomado del aula donde enseñaba. Solo afecta su escena. */
+.vn-scene-tarski {
+  --accent: #2e5e4e;       /* verde pizarra */
+  --accent-dark: #1d3d33;
+  --accent-soft: #a8c9b8;  /* verde claro */
+}
+.vn-scene-tarski .vn-nameplate { background: var(--accent); }
+/* Tarski más grande y más abajo (se recorta por abajo); la caja de diálogo termina antes de él */
+.vn-scene-tarski .vn-character { height: 98%; bottom: -10%; }
+.vn-scene-tarski .vn-dialog { right: calc(98cqh * 810 / 1110 - 4cqw + 3cqw); }
 
 /* Paleta de Gödel: ciruela, tomada de su corbata. Solo afecta su escena. */
 .vn-scene-godel {
@@ -519,3 +534,481 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .tile-lg .tile-sockets { gap: calc(1.4 * var(--u)); }
 .tile-lg .tile-output { right: calc(-2.3 * var(--u)); width: calc(2.6 * var(--u)); height: calc(1.9 * var(--u)); }
 .tile-lg .tile-bulb { right: calc(-1.5 * var(--u)); width: calc(2.2 * var(--u)); height: calc(2.2 * var(--u)); }
+
+/* ===================== Escena 3: Sala de Tarski ===================== */
+/* Cuaderno: una sola tarjeta. Cabecera (título + acciones), índice a la izquierda y página
+   a la derecha. Termina bastante arriba de la caja de diálogo para que nada se tape. */
+.notebook {
+  --ink: #1d1a33;
+  position: absolute; left: 2%; right: 29%; top: 3%; bottom: 31%;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #f6ecd6; color: var(--ink); font-family: var(--dialog); font-weight: 700;
+  border: calc(.4 * var(--u)) solid var(--accent-dark); border-radius: calc(1.4 * var(--u));
+  box-shadow: 0 calc(.6 * var(--u)) 0 rgba(29, 26, 51, .35), 0 calc(1.2 * var(--u)) calc(2.4 * var(--u)) rgba(20, 12, 40, .35);
+}
+.notebook button, .notebook input { font-family: var(--dialog); font-weight: 700; color: var(--ink); }
+.nb-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1em;
+  padding: calc(1 * var(--u)) calc(1.6 * var(--u)); border-bottom: 2px solid rgba(29, 35, 51, .15);
+}
+.nb-head h2 {
+  margin: 0; font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-weight: 400; text-transform: uppercase;
+  letter-spacing: .05em; -webkit-text-stroke: .6px currentColor; font-size: calc(1.8 * var(--u));
+}
+.nb-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(calc(11 * var(--u)), 22%) 1fr; }
+
+/* Índice: como pestañas de un cuaderno, sobre una franja verde claro */
+.nb-index {
+  display: flex; flex-direction: column; gap: calc(.4 * var(--u)); overflow-y: auto;
+  padding: calc(1 * var(--u)) calc(.6 * var(--u)) calc(1 * var(--u)) calc(1 * var(--u));
+  background: color-mix(in srgb, var(--accent-soft) 45%, transparent); border-right: 2px dashed rgba(29, 61, 51, .35);
+}
+.nb-tab {
+  display: grid; grid-template-columns: auto 1fr; column-gap: calc(.6 * var(--u)); align-items: center; text-align: left;
+  padding: calc(.5 * var(--u)) calc(.8 * var(--u)); border: 2px solid transparent; border-radius: calc(.7 * var(--u));
+  background: transparent; cursor: pointer;
+}
+.nb-tab:hover { background: rgba(255, 250, 240, .6); }
+.nb-tab.here { background: #fffaf0; border-color: var(--accent-dark); box-shadow: calc(.2 * var(--u)) calc(.25 * var(--u)) 0 rgba(29, 61, 51, .3); }
+.nb-tab.bad { border-color: #b0332a; }
+.nb-mark { grid-row: span 2; font-size: calc(1.3 * var(--u)); color: var(--accent-dark); width: 1.2em; text-align: center; }
+.nb-tab.ok .nb-mark { color: var(--accent); }
+.nb-name { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(1.6 * var(--u)); line-height: 1.1; }
+.nb-sub { font-size: calc(.95 * var(--u)); opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Página: título del paso + navegación arriba, contenido desplazable debajo */
+.nb-page { min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: calc(1.2 * var(--u)) calc(1.8 * var(--u)); gap: calc(1 * var(--u)); }
+.nb-page-head { display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; }
+.nb-nav { display: flex; gap: calc(.6 * var(--u)); }
+.nb-content { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: calc(1 * var(--u)); padding: calc(.2 * var(--u)) calc(.6 * var(--u)) calc(.6 * var(--u)) 0; }
+
+.domain-chips, .value-chips, .tuple-chips { display: flex; flex-wrap: wrap; gap: calc(.6 * var(--u)); align-items: center; }
+.domain-chip {
+  display: inline-flex; align-items: center; gap: calc(.3 * var(--u)); padding: calc(.2 * var(--u)) calc(.4 * var(--u)) calc(.2 * var(--u)) calc(1 * var(--u));
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2 * var(--u)); color: var(--ink);
+  background: #fffaf0; border: 2.5px solid var(--ink); border-radius: 50% 45% 50% 40% / 45% 50% 40% 50%;
+}
+.domain-chip button { border: none; background: none; padding: 0 calc(.3 * var(--u)); font-size: calc(1.4 * var(--u)); color: var(--ink); opacity: .6; cursor: pointer; }
+/* Dominio: óvalo dibujado a mano con los elementos como bolitas */
+.domain-world {
+  position: relative; min-height: calc(14 * var(--u)); padding: calc(2.8 * var(--u)) 15%;
+  display: flex; align-items: center; justify-content: center;
+  border: 4.5px solid var(--accent-dark); border-radius: 50% 46% 52% 44% / 48% 54% 46% 52%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(168, 201, 184, .45), rgba(168, 201, 184, .15) 70%);
+}
+.dw-label {
+  position: absolute; top: calc(.4 * var(--u)); left: 1%; rotate: -14deg;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2.8 * var(--u)); line-height: 1; color: var(--accent-dark);
+}
+/* Sin máximo de elementos: las bolitas se achican a medida que hay más (--n = cantidad) */
+.dw-items { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: calc(var(--u) * max(.6, min(1.4, 9 / var(--n)))) calc(var(--u) * max(.8, min(2, 12 / var(--n)))); }
+.dw-dot {
+  position: relative; display: grid; place-items: center;
+  --dot: calc(var(--u) * max(2.6, min(4.6, 30 / var(--n))));
+  width: var(--dot); height: var(--dot); border-radius: 50% 46% 52% 48% / 48% 52% 46% 50%;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(var(--dot) * .43); color: var(--ink);
+  background: #fffaf0; border: 2.5px solid var(--ink); box-shadow: calc(.2 * var(--u)) calc(.3 * var(--u)) 0 rgba(29, 26, 51, .25);
+}
+.dw-remove {
+  position: absolute; top: calc(-.6 * var(--u)); right: calc(-.6 * var(--u));
+  width: calc(1.8 * var(--u)); height: calc(1.8 * var(--u)); padding: 0; border-radius: 50%; line-height: 1;
+  font-size: calc(1.2 * var(--u)); background: #fffaf0; border: 2px solid var(--ink); cursor: pointer;
+  opacity: 0; transition: opacity .15s;
+}
+.dw-dot:hover .dw-remove, .dw-remove:focus-visible { opacity: 1; }
+.dw-empty { font-size: calc(1.3 * var(--u)); opacity: .6; text-align: center; max-width: 80%; }
+.domain-add { display: flex; gap: calc(.8 * var(--u)); align-items: center; justify-content: center; }
+/* el texto de ayuda del dominio también va centrado, bajo el campo */
+.domain-add + .step-help { text-align: center; }
+.domain-add .step-input { max-width: calc(9 * var(--u)); font-size: calc(2.2 * var(--u)) !important; }
+
+.value-chips button, .tuple-chips button {
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; font-size: calc(1.5 * var(--u));
+  min-width: calc(3.2 * var(--u)); padding: calc(.2 * var(--u)) calc(.8 * var(--u)); border-radius: calc(.6 * var(--u));
+  background: #fffaf0; border: 2px solid var(--ink); cursor: pointer;
+}
+.value-chips button.on, .tuple-chips button.on { background: var(--accent); border-color: var(--accent-dark); color: #fff !important; }
+
+.fn-table { display: grid; gap: calc(.5 * var(--u)); }
+.fn-row { display: flex; align-items: center; gap: calc(1 * var(--u)); flex-wrap: wrap; }
+.fn-args { font-family: var(--mono); font-size: calc(1.3 * var(--u)); color: var(--ink); min-width: calc(9 * var(--u)); }
+
+.rel-matrix { display: grid; gap: calc(.4 * var(--u)); width: max-content; align-items: center; }
+.rel-head, .rel-corner { font-family: var(--mono); font-size: calc(1.2 * var(--u)); color: var(--ink); text-align: center; padding: 0 calc(.4 * var(--u)); }
+.rel-corner { opacity: .7; }
+/* La matriz se achica con dominios grandes; si aun así no cabe, la página se desplaza */
+.rel-cell {
+  width: calc(var(--u) * max(2.2, min(3.4, 22 / var(--n, 6)))); height: calc(var(--u) * max(2.2, min(3.4, 22 / var(--n, 6)))); padding: 0; cursor: pointer;
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; font-size: calc(1.6 * var(--u));
+  background: #fffaf0; border: 2px solid var(--ink); border-radius: calc(.5 * var(--u));
+}
+.rel-cell.on { background: var(--accent); border-color: var(--accent-dark); color: #fff !important; }
+
+/* Revisar: hoja del mundo escrita a mano sobre papel rayado */
+.world-sheet {
+  padding: calc(1 * var(--u)) calc(1.6 * var(--u)); border: 2px solid var(--ink); border-radius: 12px 4px 14px 5px; rotate: -.4deg;
+  background-color: #fffaf0;
+  background-image: repeating-linear-gradient(180deg, transparent 0 calc(2.6 * var(--u) - 1px), rgba(70, 110, 170, .18) calc(2.6 * var(--u) - 1px) calc(2.6 * var(--u)));
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; color: #1c2350;
+}
+.ws-line { margin: 0; font-size: calc(1.6 * var(--u)); line-height: calc(2.6 * var(--u)); }
+.ws-domain { font-size: calc(2 * var(--u)); }
+.ws-mark { color: var(--accent); }
+.ws-line.is-missing { color: #b0332a; }
+.ws-line.is-missing .ws-mark { color: #b0332a; }
+.ws-note { margin-left: .6em; font-size: .85em; }
+
+/* Funciones: diagrama de flechas. Dos columnas de bolitas (entradas y resultados en D)
+   y las flechas en un SVG encima. Los óvalos crecen con su contenido: lo que se desplaza
+   es toda la página del paso (.nb-content), así las flechas siempre siguen a las bolitas. */
+.fd-wrap { flex: none; display: flex; flex-direction: column; gap: calc(.8 * var(--u)); }
+.fd-status, .fd-reading { margin: 0; font-size: calc(1.3 * var(--u)); color: var(--ink); }
+.fd-status b { color: var(--accent); }
+.fd-reading { text-align: center; }
+.fd-reading code { font-family: var(--mono); background: rgba(29, 26, 51, .07); padding: 0 .4em; border-radius: 4px; }
+.fd {
+  position: relative; flex: none; min-height: calc(18 * var(--u));
+  display: grid; grid-template-columns: minmax(calc(10 * var(--u)), 1fr) 1.4fr minmax(calc(10 * var(--u)), 1fr);
+}
+.fd > .fd-col:last-of-type { grid-column: 3; }
+.fd-col {
+  display: flex; flex-direction: column; gap: calc(.4 * var(--u)); align-items: center;
+  padding: calc(.8 * var(--u)) calc(.6 * var(--u)) calc(1.4 * var(--u));
+  border: 3px solid var(--accent-dark); border-radius: 46% 50% 44% 52% / 12% 10% 14% 11%;
+  background: rgba(168, 201, 184, .3);
+}
+.fd-title { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(1.3 * var(--u)); color: var(--accent-dark); }
+.fd-list {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * max(.4, min(1, 8 / var(--n))));
+  padding: calc(.4 * var(--u)) 0;
+}
+.fd-dot {
+  --dot: calc(var(--u) * max(2.6, min(4, 32 / var(--n))));
+  flex: none; min-width: var(--dot); height: var(--dot); padding: 0 calc(.6 * var(--u)); cursor: pointer;
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; font-size: calc(var(--dot) * .42); line-height: 1;
+  background: #fffaf0; border: 2.5px solid var(--ink); border-radius: 999px;
+  box-shadow: calc(.15 * var(--u)) calc(.25 * var(--u)) 0 rgba(29, 26, 51, .25);
+  transition: transform .12s, background .12s;
+}
+.fd-dot:hover { transform: scale(1.08); }
+.fd-dot.is-empty { border-style: dashed; }
+.fd-dot.is-sel { background: var(--accent); border-color: var(--accent-dark); color: #fff !important; box-shadow: 0 0 0 4px rgba(46, 94, 78, .25); }
+.fd-dot.is-chosen { background: var(--accent-soft); border-color: var(--accent-dark); }
+.fd-arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.fd-arrows > path { fill: none; stroke: rgba(29, 26, 51, .45); stroke-width: 2; stroke-linecap: round; }
+.fd-arrows > path.on { stroke: var(--accent); stroke-width: 3.5; }
+
+/* Barras de desplazamiento de las escenas: delgadas, redondeadas y del color de la paleta
+   del personaje (--accent), en lugar de la barra negra del sistema. */
+.vn-scene ::-webkit-scrollbar { width: 10px; height: 10px; }
+.vn-scene ::-webkit-scrollbar-track { background: transparent; }
+.vn-scene ::-webkit-scrollbar-thumb {
+  background: var(--accent-soft, #c9bfa6); border-radius: 999px;
+  border: 2px solid #f6ecd6; /* separa la barra del borde con el mismo color del papel */
+}
+.vn-scene ::-webkit-scrollbar-thumb:hover { background: var(--accent, #1d1a33); }
+.vn-scene ::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+.vn-scene ::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox no tiene los selectores de arriba: usa la versión estándar */
+@supports not selector(::-webkit-scrollbar) {
+  .vn-scene * { scrollbar-width: thin; scrollbar-color: var(--accent-soft, #c9bfa6) transparent; }
+}
+
+/* Constantes: el mundo D con etiquetas de papel colgando de los elementos */
+.cp-wrap { flex: none; display: flex; flex-direction: column; gap: calc(.8 * var(--u)); }
+.cp-world { padding-bottom: calc(4 * var(--u)); } /* espacio para las etiquetas */
+.cp-slot { position: relative; display: flex; flex-direction: column; align-items: center; }
+.cp-dot { cursor: pointer; transition: transform .12s, background .12s; }
+.cp-dot:hover { transform: scale(1.08); }
+.cp-dot.is-chosen { background: var(--accent); border-color: var(--accent-dark); color: #fff; }
+.cp-tags { position: absolute; top: 100%; left: 50%; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none; }
+.cp-tag {
+  position: relative; margin-top: calc(.9 * var(--u)); padding: calc(.1 * var(--u)) calc(.7 * var(--u));
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(1.4 * var(--u)); line-height: 1.2; color: var(--ink); white-space: nowrap;
+  background: #fffaf0; border: 2px solid rgba(29, 26, 51, .45); border-radius: calc(.4 * var(--u)); opacity: .7; rotate: 4deg;
+}
+.cp-tag::before { /* hilo del que cuelga la etiqueta */
+  content: ''; position: absolute; bottom: 100%; left: 50%; width: 2px; height: calc(.9 * var(--u)); background: rgba(29, 26, 51, .45);
+}
+.cp-tag.is-mine { opacity: 1; border-color: var(--accent-dark); background: #fffaf0; box-shadow: calc(.15 * var(--u)) calc(.2 * var(--u)) 0 rgba(29, 61, 51, .3); }
+.cp-tag.is-mine::before { background: var(--accent-dark); }
+
+/* Predicados de aridad 1: elementos pintados = donde es verdadero */
+.pp-dot { cursor: pointer; transition: transform .12s, background .15s; }
+.pp-dot:hover { transform: scale(1.08); }
+.pp-dot.is-on { background: #ffd970; border-color: var(--accent-dark); box-shadow: 0 0 0 calc(.35 * var(--u)) rgba(255, 201, 60, .45), calc(.2 * var(--u)) calc(.3 * var(--u)) 0 rgba(29, 26, 51, .25); }
+
+/* Predicados de aridad 2: grafo de flechas sobre el mundo D */
+.rg { position: relative; display: block; padding: 0; height: calc(26 * var(--u)); min-height: 220px; }
+.rg-arrows { position: absolute; inset: 0; overflow: visible; }
+.rg-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+.rg-hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; pointer-events: stroke; }
+.rg-edge:hover .rg-line { stroke: #b0332a; }
+.rg-dot {
+  position: absolute; display: grid; place-items: center; padding: 0; cursor: pointer; line-height: 1;
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; color: var(--ink);
+  background: #fffaf0; border: 2.5px solid var(--ink); border-radius: 50%;
+  box-shadow: calc(.2 * var(--u)) calc(.3 * var(--u)) 0 rgba(29, 26, 51, .25); transition: transform .12s;
+}
+.rg-dot:hover { transform: scale(1.08); }
+.rg-dot.is-from { background: var(--accent); border-color: var(--accent-dark); color: #fff !important; box-shadow: 0 0 0 5px rgba(46, 94, 78, .25); }
+
+/* Envoltorio de la nota grande de la escena 1: solo sirve para animar su salida.
+   Ocupa toda el área (sin capturar clics) para que la nota se siga ubicando igual. */
+.vn-note-exit { position: absolute; inset: 0; pointer-events: none; container-type: size; }
+.vn-note-exit > * { pointer-events: auto; }
+
+/* ===================== Escena 4: Consola ===================== */
+/* Tarjeta a la derecha de Turing (reusa la cabecera del cuaderno de Tarski) */
+.console-card {
+  --ink: #1d1a33;
+  position: absolute; left: 34%; right: 2%; top: 3%; bottom: 30%;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #f6ecd6; color: var(--ink); font-family: var(--dialog); font-weight: 700;
+  border: calc(.4 * var(--u)) solid var(--accent-dark); border-radius: calc(1.4 * var(--u));
+  box-shadow: 0 calc(.6 * var(--u)) 0 rgba(29, 26, 51, .35), 0 calc(1.2 * var(--u)) calc(2.4 * var(--u)) rgba(20, 12, 40, .35);
+}
+.console-card button, .console-card input { font-family: var(--dialog); font-weight: 700; color: var(--ink); }
+.console-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: calc(.9 * var(--u)); padding: calc(.9 * var(--u)) calc(1.8 * var(--u)); }
+
+/* Cinta de papel con la fórmula */
+.tape {
+  position: relative; flex: none; cursor: text;
+  padding: calc(1.4 * var(--u)) calc(1.6 * var(--u)); border-radius: calc(.4 * var(--u));
+  background-color: #fffaf0;
+  border: 2px solid var(--ink); box-shadow: calc(.2 * var(--u)) calc(.3 * var(--u)) 0 rgba(29, 26, 51, .25);
+}
+.tape.has-error { border-color: #b0332a; }
+.tape-input {
+  width: 100%; border: none; outline: none; background: transparent; padding: 0;
+  font-family: var(--mono) !important; font-weight: 600 !important; font-size: calc(2.3 * var(--u)); letter-spacing: .02em;
+}
+.tape-input::placeholder { color: rgba(29, 26, 51, .3); }
+.tape-caret { white-space: pre; font-family: var(--mono); font-weight: 600; font-size: calc(2.3 * var(--u)); letter-spacing: .02em; line-height: 1; height: calc(1.6 * var(--u)); color: #b0332a; }
+
+/* Teclado de la máquina */
+.keys { display: flex; flex-wrap: wrap; gap: calc(1 * var(--u)) calc(1.6 * var(--u)); }
+.key-group { display: flex; flex-direction: column; gap: calc(.4 * var(--u)); }
+.key-group-title { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(1.2 * var(--u)); color: var(--accent-dark); }
+.key-row { display: flex; flex-wrap: wrap; gap: calc(.5 * var(--u)); }
+.mkey {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(.15 * var(--u));
+  min-width: calc(4.6 * var(--u)); padding: calc(.5 * var(--u)) calc(.7 * var(--u)) calc(.4 * var(--u)); cursor: pointer;
+  background: #fffaf0; border: 2px solid var(--ink); border-radius: calc(.7 * var(--u)) calc(.5 * var(--u)) calc(.8 * var(--u)) calc(.6 * var(--u));
+  box-shadow: 0 calc(.3 * var(--u)) 0 var(--ink); transition: transform .08s, box-shadow .08s;
+}
+.mkey:hover { background: var(--accent-soft); }
+.mkey:active { transform: translateY(calc(.25 * var(--u))); box-shadow: 0 calc(.05 * var(--u)) 0 var(--ink); }
+.mkey-sym { font-family: var(--mono); font-size: calc(1.9 * var(--u)); line-height: 1; }
+.mkey-name { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(.95 * var(--u)); line-height: 1; opacity: .7; white-space: nowrap; }
+.mkey-wide { min-width: calc(6 * var(--u)); }
+
+/* Entorno: variables libres */
+.env { display: flex; flex-direction: column; gap: calc(1 * var(--u)); }
+.env-row { display: flex; align-items: center; gap: calc(1.2 * var(--u)); flex-wrap: wrap; }
+.env-var { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(1.8 * var(--u)); min-width: calc(9 * var(--u)); }
+.env-back { align-self: flex-start; }
+/* En la consola la tarjeta queda delante de Turing (sus teclas siempre se pueden usar)
+   y Turing es un poco más chico que en la escena 1 para dejarle espacio */
+.vn-scene-console .vn-character { height: 86%; bottom: -6%; left: auto; } /* anula el left de la escena 1 */
+.vn-scene-console .vn-character-right { right: -2%; }
+.vn-scene-console .console-card { left: 2%; right: 35%; bottom: 35%; z-index: 2; } /* termina antes de la caja de diálogo */
+.vn-scene-console .vn-dialog { right: calc(86cqh * 810 / 1110 - 2cqw + 1cqw); }
+
+/* Teclado de máquina de escribir: filas escalonadas, centradas, teclas redondas de tinta */
+.console-body { align-items: center; }
+.console-body > .tape, .console-body > .env { align-self: stretch; }
+.typewriter { display: flex; flex-direction: column; align-items: center; gap: calc(.9 * var(--u)); }
+.tw-row { display: flex; justify-content: center; flex-wrap: wrap; gap: calc(1 * var(--u)) calc(2.6 * var(--u)); }
+.tw-row-1 { margin-left: calc(2.4 * var(--u)); } /* escalonado, como una máquina de escribir */
+.tw-row-2 { margin-left: calc(4.8 * var(--u)); }
+.tw-group { display: flex; gap: calc(1 * var(--u)); }
+.tkey {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  width: calc(5 * var(--u)); height: calc(4.1 * var(--u)); padding: 0; cursor: pointer; /* óvalo: un poco más ancho que alto */
+  background: radial-gradient(circle at 40% 35%, #fffdf6, #f1e6cc 70%); border: 2.5px solid var(--ink); border-radius: 50%;
+  box-shadow: 0 0 0 calc(.25 * var(--u)) #2b2a3d, 0 calc(.45 * var(--u)) 0 calc(.25 * var(--u)) #1d1a33;
+  transition: transform .08s, box-shadow .08s;
+}
+.tkey:hover { background: radial-gradient(circle at 40% 35%, #fffdf6, var(--accent-soft) 75%); }
+.tkey:active { transform: translateY(calc(.3 * var(--u))); box-shadow: 0 0 0 calc(.25 * var(--u)) #2b2a3d, 0 calc(.1 * var(--u)) 0 calc(.25 * var(--u)) #1d1a33; }
+.tkey-sym { font-family: var(--mono); font-size: calc(1.55 * var(--u)); line-height: 1; }
+.tkey-name { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: calc(.78 * var(--u)); line-height: 1; opacity: .7; white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+.tkey-wide { width: calc(6.8 * var(--u)); border-radius: 999px; }
+
+.console-go { display: flex; justify-content: center; padding-top: calc(.4 * var(--u)); }
+.btn-go { padding: calc(.7 * var(--u)) calc(3.6 * var(--u)) !important; font-size: calc(1.5 * var(--u)) !important; }
+
+/* ===================== Escenas 5-6: Informe ===================== */
+.vn-scene-report { --accent: #2b5797; --accent-dark: #1b3a68; --accent-soft: #a9c4e6; }
+/* Placa del nombre con el color de quien habla */
+.vn-dialog.tone-turing .vn-nameplate { background: #2b5797; }
+.vn-dialog.tone-godel .vn-nameplate { background: #7a3566; }
+.vn-dialog.tone-tarski .vn-nameplate { background: #2e5e4e; }
+.vn-scene-report .vn-dialog { right: calc(86cqh * 810 / 1110 - 4cqw + 1cqw); }
+
+/* Un personaje a la vez, a la derecha (mismo lugar para los tres) */
+.vn-scene-report .vn-character { left: auto; right: -4%; height: 86%; bottom: -5%; }
+/* Área del informe: sin tarjeta, todo flota sobre el laboratorio */
+.report-area { position: absolute; left: 2%; right: 40%; top: 3%; bottom: 27%; z-index: 5; display: flex; flex-direction: column; }
+.report-area button { font-family: var(--dialog); font-weight: 700; color: #1d1a33; }
+.report-processing { flex: 1; display: grid; place-items: center; container-type: inline-size; }
+.report-processing .vn-machine { position: relative; inset: auto; width: min(100%, 80cqw); }
+.report-result { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(1 * var(--u)); }
+
+.report-head { display: flex; align-items: center; justify-content: flex-start; gap: calc(2 * var(--u)); }
+.report-formula::before { /* trozo de cinta adhesiva */
+  content: ''; position: absolute; top: calc(-.8 * var(--u)); left: 50%; translate: -50% 0; rotate: -3deg;
+  width: calc(6 * var(--u)); height: calc(1.6 * var(--u)); background: rgba(226, 214, 180, .85);
+}
+/* el veredicto, grande y a la izquierda, con la letra del menú lateral */
+.report-head .stamp {
+  font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-weight: 400; -webkit-text-stroke: 1.2px currentColor; letter-spacing: .06em; order: -1; font-size: calc(5 * var(--u)); padding: calc(.5 * var(--u)) calc(1.8 * var(--u)); border-width: calc(.6 * var(--u)); }
+.report-formula {
+  /* la fórmula como una nota de papel pegada con cinta */
+  position: relative; rotate: 1.5deg;
+  font-family: var(--mono); font-weight: 600; font-size: calc(1.9 * var(--u)); color: #1d1a33;
+  background-color: #fbf3df;
+  background-image: repeating-linear-gradient(180deg, transparent 0 calc(2.4 * var(--u) - 1px), rgba(70, 110, 170, .16) calc(2.4 * var(--u) - 1px) calc(2.4 * var(--u)));
+  padding: calc(1.2 * var(--u)) calc(1.6 * var(--u)) calc(.9 * var(--u));
+  border-radius: 2px 3px 4px 2px;
+  box-shadow: calc(.3 * var(--u)) calc(.5 * var(--u)) calc(.8 * var(--u)) rgba(0, 0, 0, .35);
+}
+/* Sello del veredicto */
+.stamp {
+  font-family: 'Special Elite', 'Courier New', monospace; font-size: calc(2.6 * var(--u)); letter-spacing: .08em; line-height: 1;
+  padding: calc(.4 * var(--u)) calc(1.2 * var(--u)); border: calc(.4 * var(--u)) double currentColor; border-radius: calc(.5 * var(--u));
+  background: #fffaf0; box-shadow: 0 0 calc(1.6 * var(--u)) rgba(255, 236, 190, .6);
+}
+.stamp.is-true { color: #2e7d4f; }
+.stamp.is-false { color: #b0332a; }
+
+/* Árbol de la fórmula: notas de papel unidas con hilos, y una cámara que se mueve */
+.report-tree { position: relative; flex: 1; min-height: 0; margin-left: 22%; } /* más a la derecha */
+/* Hilos y notas pueden subir y salir por el borde superior de la pantalla (se ven irse);
+   las notas solo se recortan a los lados y abajo del área del árbol. */
+.ft { position: absolute; inset: 0; }
+.ft-clip { position: absolute; inset: 0; clip-path: inset(-300vh -15% 0 -15%); }
+.ft-world-links { pointer-events: none; }
+/* el sello y la fórmula quedan delante de los hilos que suben */
+.report-head { position: relative; z-index: 3; }
+.ft-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+/* Hilos de color entre notas, con chinchetas en los extremos */
+.ft-links { position: absolute; inset: 0; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .45)); }
+.ft-links path { fill: none; stroke-width: 3; stroke-linecap: round; }
+.ft-links .is-true path { stroke: #6fcf97; }
+.ft-links .is-false path { stroke: #e05a4f; }
+.ft-pin { fill: #c9a24a; stroke: #6b4f16; stroke-width: 1.5; }
+.ft-slot { position: absolute; display: flex; flex-direction: column; align-items: center; }
+/* Cada parte es una nota de papel pegada con cinta, un poco torcida */
+.ft-node {
+  position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2em; cursor: pointer;
+  background-color: #fbf3df;
+  background-image: repeating-linear-gradient(180deg, transparent 0 1.6em, rgba(70, 110, 170, .13) 1.6em calc(1.6em + 1px));
+  border: none; border-radius: 2px 3px 4px 2px;
+  box-shadow: .3em .5em .8em rgba(0, 0, 0, .4);
+  transition: transform .25s, box-shadow .25s;
+}
+.ft-node::before { /* cinta adhesiva */
+  content: ''; position: absolute; top: -.7em; left: 50%; translate: -50% 0; rotate: -4deg;
+  width: 4.6em; height: 1.3em; background: rgba(226, 214, 180, .85);
+}
+.ft-node:hover { transform: translateY(-3px); }
+/* la nota que se está explicando se levanta un poco */
+.ft-node.is-sel { transform: scale(1.07); box-shadow: .5em .9em 1.4em rgba(0, 0, 0, .5), 0 0 0 .25em rgba(255, 217, 112, .9); }
+.ft-text { font-family: var(--mono); font-weight: 600; font-size: 1.5em; white-space: nowrap; color: #1d1a33; line-height: 1.1; }
+.ft-meta { font-family: 'Gochi Hand', 'Caveat', cursive; font-weight: 400; font-size: 1.15em; color: #1d1a33; opacity: .7; line-height: 1; }
+/* sello V / F */
+.ft-stamp {
+  position: absolute; top: -.9em; right: -.9em; display: grid; place-items: center; width: 2.4em; height: 2.4em; rotate: 12deg;
+  font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-size: 1.3em; -webkit-text-stroke: .8px currentColor;
+  background: #fffaf0; border: .2em double currentColor; border-radius: 50%; box-shadow: .1em .2em .3em rgba(0, 0, 0, .3);
+}
+.ft-node.is-true .ft-stamp { color: #2e7d4f; }
+.ft-node.is-false .ft-stamp { color: #b0332a; }
+/* Casos probados de un cuantificador: papelitos sueltos bajo su nota, escritos a mano,
+   con un sello V/F pequeño; el caso decisivo va marcado con resaltador */
+.ft-checks { display: flex; flex-wrap: wrap; justify-content: center; gap: .7em; margin-top: 1.1em; width: max-content; max-width: 36em; }
+.ft-check {
+  display: inline-flex; align-items: center; gap: .45em; padding: .25em .7em .25em .8em;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: 1.25em; color: #1d1a33; white-space: nowrap;
+  background: #fbf3df; border-radius: 2px; box-shadow: .15em .25em .4em rgba(0, 0, 0, .35);
+}
+.ft-check:nth-child(odd) { rotate: -2deg; }
+.ft-check:nth-child(even) { rotate: 1.5deg; }
+.ft-check::after { /* mini sello */
+  display: grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 50%; border: .12em solid currentColor;
+  font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-size: .85em; -webkit-text-stroke: .5px currentColor;
+}
+.ft-check.is-true::after { content: 'V'; color: #2e7d4f; }
+.ft-check.is-false::after { content: 'F'; color: #b0332a; }
+.ft-check.is-decisive { background: linear-gradient(transparent 15%, #ffd970 15% 88%, transparent 88%), #fbf3df; }
+.ft-all { position: absolute; right: calc(.6 * var(--u)); top: calc(.4 * var(--u)); z-index: 2; background: #fffaf0 !important; }
+
+.report-actions { flex: none; display: flex; justify-content: center; gap: calc(1 * var(--u)); }
+/* Sobre el fondo oscuro, el botón con borde necesita fondo de papel para verse */
+.report-actions .btn-ghost { background: #fffaf0; }
+/* Botones del informe en la misma fila que el veredicto y la fórmula, a la derecha.
+   La fórmula nunca se parte en varias líneas. */
+.report-head .report-formula { white-space: nowrap; flex: none; }
+/* los botones salen de la columna del árbol hacia la derecha (arriba, sobre la ventana),
+   así no empujan el árbol hacia abajo */
+.report-head .report-actions { position: absolute; left: 100%; top: 50%; translate: calc(1.6 * var(--u)) -50%; display: flex; gap: calc(.8 * var(--u)); white-space: nowrap; }
+/* En la consola y el informe, Turing no se refleja (mira en la dirección original de su dibujo) */
+.vn-scene-console .vn-flip, .vn-scene-report .rp-turing .vn-flip { transform: none; }
+
+/* Entorno: variables libres como etiquetas colgadas del mundo D */
+.envp { display: flex; flex-direction: column; gap: calc(1 * var(--u)); }
+.envp-formula { margin: 0; text-align: center; font-family: var(--mono); font-weight: 600; font-size: calc(2.2 * var(--u)); color: var(--ink); }
+.envp-var { background: var(--tag); color: var(--ink); padding: 0 .15em; border-radius: 4px; box-shadow: 0 0 0 2px rgba(29, 26, 51, .25); }
+.envp-tabs { display: flex; align-items: center; justify-content: center; gap: calc(.7 * var(--u)); flex-wrap: wrap; font-size: calc(1.3 * var(--u)); }
+.envp-tab {
+  font-family: 'Gochi Hand', 'Caveat', cursive !important; font-weight: 400 !important; font-size: calc(1.6 * var(--u));
+  padding: calc(.15 * var(--u)) calc(1.1 * var(--u)); background: #fffaf0; border: 2px dashed var(--ink); border-radius: calc(.4 * var(--u)); cursor: pointer; rotate: -2deg;
+}
+.envp-tab.done { border-style: solid; }
+.envp-tab.on { background: var(--tag); border-style: solid; box-shadow: 0 0 0 3px rgba(29, 26, 51, .2); rotate: 0deg; }
+.envp-tag { background: var(--tag) !important; }
+.envp-world { min-height: calc(12 * var(--u)); }
+.vn-scene-console .env { width: 100%; align-items: stretch; }
+
+/* Dato curioso: botón «i» arriba a la derecha de cada escena y nota de papel con el dato */
+.scene-info { position: absolute; top: calc(1.2 * var(--u)); right: calc(1.2 * var(--u)); z-index: 20; display: flex; flex-direction: column; align-items: flex-end; }
+.scene-info-btn {
+  width: calc(3.4 * var(--u)); height: calc(3.4 * var(--u)); padding: 0; cursor: pointer; line-height: 1;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2 * var(--u)); color: #1d1a33;
+  background: #fffaf0; border: 2.5px solid #1d1a33; border-radius: 50%;
+  box-shadow: 0 calc(.3 * var(--u)) 0 #1d1a33; transition: transform .1s;
+}
+.scene-info-btn:hover { background: #ffd970; }
+.scene-info-btn:active { transform: translateY(2px); box-shadow: 0 calc(.1 * var(--u)) 0 #1d1a33; }
+.scene-info-note {
+  position: relative; margin-top: calc(1 * var(--u)); width: min(calc(30 * var(--u)), 80vw);
+  padding: calc(1.4 * var(--u)) calc(1.6 * var(--u)) calc(1.2 * var(--u));
+  background-color: #fbf3df;
+  background-image: repeating-linear-gradient(180deg, transparent 0 calc(2.2 * var(--u) - 1px), rgba(70, 110, 170, .15) calc(2.2 * var(--u) - 1px) calc(2.2 * var(--u)));
+  box-shadow: calc(.3 * var(--u)) calc(.5 * var(--u)) calc(1 * var(--u)) rgba(0, 0, 0, .45); color: #1d1a33;
+}
+.scene-info-note::before { /* cinta adhesiva */
+  content: ''; position: absolute; top: calc(-.8 * var(--u)); left: 50%; translate: -50% 0; rotate: -4deg;
+  width: calc(6 * var(--u)); height: calc(1.6 * var(--u)); background: rgba(226, 214, 180, .85);
+}
+.scene-info-title { display: block; font-family: 'Single Day', 'Patrick Hand', var(--dialog); text-transform: uppercase; letter-spacing: .04em; -webkit-text-stroke: .5px currentColor; font-size: calc(1.2 * var(--u)); margin-bottom: calc(.5 * var(--u)); }
+.scene-info-note p { margin: 0; font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(1.5 * var(--u)); line-height: calc(2.2 * var(--u)); }
+
+/* Árbol: la cuenta del conectivo, la consulta del átomo y la etiqueta del hilo */
+.ft-calc {
+  margin-top: .8em; padding: .15em .7em; white-space: nowrap; rotate: -1deg;
+  font-family: 'Gochi Hand', 'Caveat', cursive; font-size: 1.8em; color: #1d1a33;
+  background: #fffaf0; border-radius: 2px; box-shadow: .15em .25em .4em rgba(0, 0, 0, .35);
+}
+.ft-calc b { font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-weight: 400; -webkit-text-stroke: .5px currentColor; padding: 0 .1em; }
+.ft-calc b.is-true { color: #2e7d4f; }
+.ft-calc b.is-false { color: #b0332a; }
+.ft-lookup { font-size: 1.55em; }
+.ft-assign {
+  position: absolute; translate: -50% -50%; z-index: 1; white-space: nowrap; pointer-events: none;
+  padding: .15em .6em; font-family: 'Gochi Hand', 'Caveat', cursive; font-size: 1.8em; color: #1d1a33;
+  background: #ffd970; border-radius: 3px; rotate: -4deg; box-shadow: .15em .25em .4em rgba(0, 0, 0, .4);
+}

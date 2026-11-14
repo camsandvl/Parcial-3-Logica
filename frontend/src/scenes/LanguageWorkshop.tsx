@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ValidationError } from '@contracts/types';
 import { api } from '../api';
-import { Character, type Expression } from '../components/vn/Character';
+import { OFFLINE_LINE, offline } from '../api/httpApi';
+import { Character, characterImages, type Expression } from '../components/vn/Character';
 import { DialogBox } from '../components/vn/DialogBox';
 import { SymbolTile, type SymbolKind } from '../components/vn/SymbolTile';
 import { useMachine } from '../store/machine';
+import { SceneInfo } from '../components/vn/SceneInfo';
+import { preloadImages } from '../utils/preload';
 
 /*
  * Escena 2: el usuario declara el lenguaje fabricando un símbolo a la vez,
@@ -79,6 +82,9 @@ export function LanguageWorkshop() {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [busy, setBusy] = useState(false);
   const [leaving, setLeaving] = useState(false);
+
+  // Mientras se trabaja aquí, se descarga la escena de Tarski.
+  useEffect(() => { preloadImages([...characterImages('tarski'), '/assets/scene3/bg-classroom.png']); }, []);
   const [bg, setBg] = useState(BG);
 
   // Ficha en fabricación
@@ -187,6 +193,7 @@ export function LanguageWorkshop() {
 
   return (
     <section className="vn-scene vn-scene-godel" aria-label="Escena 2: Taller de Gödel">
+      <SceneInfo place="Biblioteca de archivo" fact="Estamos en una biblioteca de archivo, con muros de cajoncitos de fichas, porque Gödel hizo algo parecido con la lógica: le dio un número a cada símbolo y fórmula para «catalogarlos», como cada libro tiene su ficha en uno de esos cajones. Con esa idea demostró en 1931 sus teoremas de incompletitud." />
       <div className="vn-stage">
         <img className={`vn-bg ${bg === BG_FALLBACK ? 'is-placeholder' : ''}`} src={bg} alt="" draggable={false} onError={() => setBg(BG_FALLBACK)} />
       </div>
@@ -337,6 +344,7 @@ function summary(choice: Choice, name: string, arity: number) {
 
 function errorLine(errors: ValidationError[]) {
   if (errors.length === 0) return '';
+  if (offline(errors)) return OFFLINE_LINE;
   const more = errors.length > 1 ? ` (y ${errors.length - 1} problema${errors.length > 2 ? 's' : ''} más, marcados en el estante)` : '';
   return `Hmm… este lenguaje no está bien formado: ${errors[0].message}.${more}`;
 }
