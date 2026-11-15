@@ -70,7 +70,7 @@ function preorder(n: TraceNode, path = 'r'): Step[] {
 const roleOf = (n: TraceNode): CharacterName => (['forall', 'exists', 'pred'].includes(n.node) ? 'tarski' : 'godel');
 
 export function Report() {
-  const { result, formula, interpretation } = useMachine();
+  const { result, formula, ast } = useMachine();
   const navigate = useNavigate();
   const [minDone, setMinDone] = useState(false);
   const [line, setLine] = useState(0);
@@ -148,7 +148,7 @@ export function Report() {
 
               <div className="report-tree">
                 {root && revealed > 0 && (
-                  <FormulaTree root={root} shown={shown} current={currentPath} overview={finished} interpretation={interpretation}
+                  <FormulaTree ast={ast} root={root} shown={shown} current={currentPath} overview={finished}
                     onPick={(path, node) => { if (finished) setPicked(picked?.path === path ? null : { path, node }); }} />
                 )}
                 {finished && picked && (

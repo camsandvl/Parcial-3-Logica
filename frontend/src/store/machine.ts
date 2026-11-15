@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type {
   Environment,
   EvaluateResponse,
+  Formula,
   Interpretation,
   Language,
   ValidationError,
@@ -17,6 +18,7 @@ interface MachineState {
   language: Language;
   interpretation: Interpretation;
   formula: string;
+  ast: Formula | null;
   freeVars: string[];
   environment: Environment;
   errors: ValidationError[];
@@ -25,6 +27,7 @@ interface MachineState {
   setLanguage: (l: Language) => void;
   setInterpretation: (i: Interpretation) => void;
   setFormula: (f: string) => void;
+  setAst: (ast: Formula | null) => void;
   setFreeVars: (v: string[]) => void;
   setEnvironment: (e: Environment) => void;
   setErrors: (e: ValidationError[]) => void;
@@ -46,6 +49,7 @@ export const useMachine = create<MachineState>((set) => ({
   language: { functions: [], predicates: [] },
   interpretation: { domain: [], functions: {}, predicates: {} },
   formula: '',
+  ast: null,
   freeVars: [],
   environment: {},
   errors: [],
@@ -54,6 +58,7 @@ export const useMachine = create<MachineState>((set) => ({
   setLanguage: (language) => set({ language }),
   setInterpretation: (interpretation) => set({ interpretation }),
   setFormula: (formula) => set({ formula }),
+  setAst: (ast) => set({ ast }),
   setFreeVars: (freeVars) => set({ freeVars }),
   setEnvironment: (environment) => set({ environment }),
   setErrors: (errors) => set({ errors }),

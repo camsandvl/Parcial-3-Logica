@@ -151,6 +151,7 @@ export function Console() {
       return;
     }
     s.setErrors([]);
+    s.setAst(res.ast);
     s.setFreeVars(res.freeVars);
     // Conserva solo asignaciones de variables que siguen libres.
     s.setEnvironment(Object.fromEntries(res.freeVars.filter((v) => s.environment[v]).map((v) => [v, s.environment[v]])));
