@@ -220,7 +220,7 @@ export function Console() {
 
   return (
     <section className="vn-scene vn-scene-turing vn-scene-console" aria-label="Escena 4: Consola">
-      <SceneInfo place="Hut 8, Bletchley Park" fact="Estamos en el Hut 8 de Bletchley Park porque ahí Turing dirigió al equipo que descifraba los mensajes navales cifrados con Enigma. Las cabañas eran de madera sencilla, con las cortinas cerradas por la guerra, y la máquina de escribir del escritorio era la herramienta de cada día, como el teclado con el que escribes tu fórmula." />
+      <SceneInfo photo={{ src: '/assets/notes/bletchley-park.webp', alt: 'Foto de grupo de criptoanalistas británicos; Alan Turing está sentado abajo a la izquierda', caption: 'Alan Turing (sentado, a la izquierda) con colegas criptoanalistas.' }} place="Hut 8, Bletchley Park" fact="Estamos en el Hut 8 de Bletchley Park porque ahí Turing dirigió al equipo que descifraba los mensajes navales cifrados con Enigma. Las cabañas eran de madera sencilla, con las cortinas cerradas por la guerra, y la máquina de escribir del escritorio era la herramienta de cada día, como el teclado con el que escribes tu fórmula." />
       <div className="vn-stage">
         <img className="vn-bg" src="/assets/scene5/bg-hut8.png" alt="" draggable={false} />
       </div>

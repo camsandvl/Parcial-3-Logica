@@ -233,7 +233,7 @@ export function UniverseRoom() {
 
   return (
     <section className="vn-scene vn-scene-tarski" aria-label="Escena 3: Sala de Tarski">
-      <SceneInfo place="Aula de Varsovia, 1933" fact="Estamos en un aula de Varsovia en el invierno de 1933 porque Tarski enseñó durante años en un liceo de esa ciudad, y ese año publicó su definición de verdad. La nieve que cae por la ventana es un guiño a su ejemplo: «La nieve es blanca» es verdadera si y solo si la nieve es blanca." />
+      <SceneInfo photo={{ src: '/assets/notes/tarski.webp', alt: 'Alfred Tarski sonriendo frente a una pizarra llena de fórmulas', caption: 'Alfred Tarski frente a la pizarra.' }} place="Aula de Varsovia, 1933" fact="Estamos en un aula de Varsovia en el invierno de 1933 porque Tarski enseñó durante años en un liceo de esa ciudad, y ese año publicó su definición de verdad. La nieve que cae por la ventana es un guiño a su ejemplo: «La nieve es blanca» es verdadera si y solo si la nieve es blanca." />
       <div className="vn-stage">
         <img className="vn-bg" src={BG} alt="" draggable={false} />
       </div>

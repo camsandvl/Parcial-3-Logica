@@ -90,7 +90,7 @@ export function Activation() {
 
   return (
     <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
-      <SceneInfo place="Laboratorio de computación, Mánchester" fact="Estamos en un laboratorio de computación de la Universidad de Mánchester, hacia 1948, porque ahí trabajó Turing con algunas de las primeras computadoras reales. Los bastidores llenos de válvulas encendidas del fondo eran esas máquinas: ese año la «Manchester Baby» ejecutó por primera vez un programa guardado en su propia memoria." />
+      <SceneInfo photo={{ src: '/assets/notes/manchester-lab.webp', alt: 'Sala llena de bastidores de válvulas y cables de las primeras computadoras de Mánchester', caption: 'Las primeras computadoras de la Universidad de Mánchester, hacia 1949.' }} place="Laboratorio de computación, Mánchester" fact="Estamos en un laboratorio de computación de la Universidad de Mánchester, hacia 1948, porque ahí trabajó Turing con algunas de las primeras computadoras reales. Los bastidores llenos de válvulas encendidas del fondo eran esas máquinas: ese año la «Manchester Baby» ejecutó por primera vez un programa guardado en su propia memoria." />
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>

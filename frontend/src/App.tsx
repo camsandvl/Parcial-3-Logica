@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, type Location } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ControlPanel } from './components/ControlPanel';
 import { Activation } from './scenes/Activation';
 import { Console } from './scenes/Console';
+import { Intro } from './scenes/Intro';
 import { LanguageWorkshop } from './scenes/LanguageWorkshop';
 import { Report } from './scenes/Report';
 import { UniverseRoom } from './scenes/UniverseRoom';
@@ -12,7 +13,7 @@ import { useMachine, type ModuleId } from './store/machine';
 /** Impide entrar por URL a un módulo que aún no se ha desbloqueado. */
 function Locked({ module, children }: { module: ModuleId; children: React.JSX.Element }) {
   const status = useMachine((s) => s.status[module]);
-  return status === 'locked' ? <Navigate to="/" replace /> : children;
+  return status === 'locked' ? <Navigate to="/activacion" replace /> : children;
 }
 
 const FADE_MS = 800;
@@ -21,7 +22,9 @@ const FADE_MS = 800;
 function Scenes({ location }: { location: Location }) {
   return (
     <Routes location={location}>
-      <Route path="/" element={<Activation />} />
+      {/* «/» es la portada: se dibuja aparte, encima de todo (ver abajo) */}
+      <Route path="/" element={null} />
+      <Route path="/activacion" element={<Activation />} />
       <Route path="/lenguaje" element={<Locked module="language"><LanguageWorkshop /></Locked>} />
       <Route path="/universo" element={<Locked module="universe"><UniverseRoom /></Locked>} />
       <Route path="/consola" element={<Locked module="console"><Console /></Locked>} />
@@ -48,6 +51,9 @@ export default function App() {
   }, [location]);
 
   return (
+    <>
+    {/* Portada: ocupa toda la pantalla (también el panel) y se desvanece al empezar */}
+    <AnimatePresence>{location.pathname === '/' && <Intro key="intro" />}</AnimatePresence>
     <div className="machine">
       <ControlPanel />
       <main className="stage">
@@ -66,5 +72,6 @@ export default function App() {
         })}
       </main>
     </div>
+    </>
   );
 }

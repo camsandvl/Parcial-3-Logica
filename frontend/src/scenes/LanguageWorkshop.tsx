@@ -193,7 +193,7 @@ export function LanguageWorkshop() {
 
   return (
     <section className="vn-scene vn-scene-godel" aria-label="Escena 2: Taller de Gödel">
-      <SceneInfo place="Biblioteca de archivo" fact="Estamos en una biblioteca de archivo, con muros de cajoncitos de fichas, porque Gödel hizo algo parecido con la lógica: le dio un número a cada símbolo y fórmula para «catalogarlos», como cada libro tiene su ficha en uno de esos cajones. Con esa idea demostró en 1931 sus teoremas de incompletitud." />
+      <SceneInfo photo={{ src: '/assets/notes/godel.jpg', alt: 'Retrato de Kurt Gödel con sus gafas redondas', caption: 'Kurt Gödel.' }} place="Biblioteca de archivo" fact="Estamos en una biblioteca de archivo, con muros de cajoncitos de fichas, porque Gödel hizo algo parecido con la lógica: le dio un número a cada símbolo y fórmula para «catalogarlos», como cada libro tiene su ficha en uno de esos cajones. Con esa idea demostró en 1931 sus teoremas de incompletitud." />
       <div className="vn-stage">
         <img className={`vn-bg ${bg === BG_FALLBACK ? 'is-placeholder' : ''}`} src={bg} alt="" draggable={false} onError={() => setBg(BG_FALLBACK)} />
       </div>

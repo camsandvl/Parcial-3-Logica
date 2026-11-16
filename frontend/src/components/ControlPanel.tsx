@@ -1,8 +1,8 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { MODULES, useMachine, type ModuleId } from '../store/machine';
 
 const LABELS: Record<ModuleId, { title: string; path: string }> = {
-  activation: { title: 'Activación', path: '/' },
+  activation: { title: 'Activación', path: '/activacion' },
   language: { title: 'Taller de Gödel', path: '/lenguaje' },
   universe: { title: 'Sala de Tarski', path: '/universo' },
   console: { title: 'Consola', path: '/consola' },
@@ -14,7 +14,7 @@ export function ControlPanel() {
   const status = useMachine((s) => s.status);
   return (
     <nav className="control-panel" aria-label="Módulos de la máquina">
-      <h1 className="brand">Máquina de Turing</h1>
+      <h1 className="brand"><Link to="/" title="Volver a la portada">Máquina de Turing</Link></h1>
       <ol>
         {MODULES.map((m) => {
           const st = status[m];
