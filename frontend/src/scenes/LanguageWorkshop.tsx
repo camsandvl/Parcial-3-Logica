@@ -28,8 +28,8 @@ type Phase = 'intro' | 'build' | 'error' | 'warn' | 'example' | 'done';
 interface Line { expression: Expression; text: string }
 
 const INTRO: Line[] = [
-  { expression: 'neutral', text: 'Soy Kurt Gödel. Antes de hablar de verdad, necesitamos un lenguaje: los símbolos con los que escribirás.' },
-  { expression: 'talk', text: 'Fabricaremos los símbolos uno por uno. Cada ficha lleva grabado su número de Gödel: un código único. Viejas costumbres.' },
+  { expression: 'neutral', text: 'Has llegado a mi taller. Soy Kurt Gödel. Antes de hablar de verdad, necesitamos construir un lenguaje preciso.' },
+  { expression: 'talk', text: 'Como operador, construirás los símbolos uno por uno. La aridad te dirá cuántos argumentos puede recibir cada símbolo.' },
 ];
 
 const STEP_LINES: Record<Step, Line> = {
@@ -45,7 +45,7 @@ const CONFIRM_LINES: Record<Choice, Line> = {
   constant: { expression: 'talk', text: 'Sin círculos: no recibe argumentos. Solo tiene la flecha de salida, porque nombra un elemento fijo, c ∈ D.' },
   predicate: { expression: 'talk', text: 'Los círculos de arriba son sus argumentos; el foco se enciende si lo que afirma es verdadero, P ⊆ Dⁿ.' },
 };
-const DONE: Line = { expression: 'happy', text: 'Un lenguaje impecable. Ahora Tarski le dará significado a cada símbolo.' };
+const DONE: Line = { expression: 'happy', text: 'Ya tenemos un lenguaje preciso. Ahora llévalo al taller de Tarski para darle significado.' };
 /** Si intenta instalar sin predicados, Gödel lo detiene y explica por qué. */
 const NO_PREDICATE: Line = { expression: 'confused', text: 'Espera: te falta al menos un predicado. Sin ellos no hay nada que pueda ser verdadero o falso. Fabrica uno, como P(x).' };
 const EXAMPLE_LINE: Line = { expression: 'happy', text: 'Te dejé un lenguaje clásico en el estante: f, la constante c, P y R. Puedes cambiarlo o instalarlo tal cual.' };

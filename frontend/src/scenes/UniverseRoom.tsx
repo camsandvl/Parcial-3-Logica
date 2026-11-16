@@ -29,11 +29,11 @@ type Phase = 'intro' | 'build' | 'warn' | 'error' | 'example' | 'done';
 interface Line { expression: Expression; text: string }
 
 const INTRO: Line[] = [
-  { expression: 'neutral', text: 'Soy Alfred Tarski. Gödel te dio los símbolos; yo te ayudaré a darles significado.' },
+  { expression: 'neutral', text: 'Soy Alfred Tarski. Gödel te dio los símbolos; ahora construiremos el mundo que les dará significado.' },
   { expression: 'talk', text: '«La nieve es blanca» es verdadera si y solo si la nieve es blanca. Una afirmación es verdadera cuando coincide con el mundo.' },
   { expression: 'talk', text: 'Así que construyamos ese mundo: un dominio, qué hace cada función y dónde se cumple cada predicado. Eso es una interpretación.' },
 ];
-const DONE: Line = { expression: 'happy', text: 'Un mundo bien construido. Ahora vuelve con Turing a la consola: ahí escribirás la fórmula.' };
+const DONE: Line = { expression: 'happy', text: 'La interpretación está lista. Regresa con Turing a la consola para comprobar una fórmula.' };
 const EXAMPLE_LINE: Line = { expression: 'happy', text: 'Te armé un mundo de ejemplo con tres elementos. Puedes cambiarlo o instalarlo tal cual.' };
 
 // El requerimiento solo pide un dominio finito y no vacío: no hay máximo de elementos.

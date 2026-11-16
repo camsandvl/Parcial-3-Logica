@@ -90,7 +90,7 @@ export function Report() {
     return [
       { who: 'turing', expression: value ? 'happy' : 'neutral', text: `¡La máquina terminó! Tu fórmula es ${value ? 'VERDADERA' : 'FALSA'}. Veamos por qué, parte por parte.` },
       ...steps.map(({ node }) => ({ who: roleOf(node), expression: 'talk' as Expression, text: `${node.text} es ${vf(node.value)}. ${explain(node)}` })),
-      { who: 'turing', expression: 'happy', text: 'Así razona la máquina: de las partes al todo. Haz clic en cualquier parte del árbol para repasarla, o prueba otra fórmula.' },
+      { who: 'turing', expression: 'happy', text: '¡Lo conseguimos! Ahora podemos volver al salón y resolver el examen explicando cómo se construye y se comprueba una fórmula. Haz clic en cualquier parte del árbol para repasarla, o prueba otra fórmula.' },
     ];
   }, [root, result, value, steps]);
 
@@ -117,7 +117,7 @@ export function Report() {
 
   return (
     <section className="vn-scene vn-scene-report" aria-label="Informe">
-      <SceneInfo place="Auditorio universitario, años 30" fact="Estamos en un auditorio universitario de los años 30 porque en salas como esta se presentaban los grandes resultados de la lógica, frente a la pizarra y ante otros colegas. En un congreso de esa época, en Königsberg en 1930, Gödel anunció su teorema de incompletitud." />
+      <SceneInfo place="Regreso al salón de clases" fact="El portal nos devuelve al examen. La fórmula ya fue analizada y evaluada: ahora podemos defender la respuesta explicando el lenguaje, la interpretación, los testigos y los contraejemplos." />
       <div className="vn-stage">
         <img className="vn-bg" src="/assets/scene4/bg-lecture-hall.png" alt="" draggable={false} />
       </div>
@@ -142,6 +142,7 @@ export function Report() {
                   <motion.div className="report-actions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <button type="button" className="btn-ghost btn-small" onClick={() => navigate('/universo')}>Cambiar el mundo</button>
                     <button type="button" className="btn-install" onClick={() => navigate('/consola')}>Probar otra fórmula</button>
+                    <button type="button" className="btn-install" onClick={() => navigate('/examen')}>Volver al examen</button>
                   </motion.div>
                 )}
               </header>
@@ -167,6 +168,7 @@ export function Report() {
 
       <DialogBox speaker={NAMES[who]} side="right" tone={who} text={current.text}
         canAdvance={done && !finished && !picked} onAdvance={() => setLine((l) => Math.min(l + 1, lines.length - 1))} onTypingChange={setTalking} />
+
     </section>
   );
 }

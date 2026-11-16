@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { ControlPanel } from './components/ControlPanel';
 import { Activation } from './scenes/Activation';
 import { Console } from './scenes/Console';
+import { ExamRoom } from './scenes/ExamRoom';
+import { ExamReturn } from './scenes/ExamReturn';
 import { LanguageWorkshop } from './scenes/LanguageWorkshop';
 import { Report } from './scenes/Report';
 import { UniverseRoom } from './scenes/UniverseRoom';
@@ -21,11 +23,13 @@ const FADE_MS = 800;
 function Scenes({ location }: { location: Location }) {
   return (
     <Routes location={location}>
-      <Route path="/" element={<Activation />} />
+      <Route path="/" element={<ExamRoom />} />
+      <Route path="/turing" element={<Locked module="activation"><Activation /></Locked>} />
       <Route path="/lenguaje" element={<Locked module="language"><LanguageWorkshop /></Locked>} />
       <Route path="/universo" element={<Locked module="universe"><UniverseRoom /></Locked>} />
       <Route path="/consola" element={<Locked module="console"><Console /></Locked>} />
       <Route path="/informe" element={<Locked module="console"><Report /></Locked>} />
+      <Route path="/examen" element={<Locked module="console"><ExamReturn /></Locked>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

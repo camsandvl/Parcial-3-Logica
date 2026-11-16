@@ -16,12 +16,12 @@ interface Line {
 }
 
 const SCRIPT: Line[] = [
-  { expression: 'neutral', text: 'Ah, por fin, un operador. Soy Alan Turing, y esta es mi máquina más ambiciosa.' },
-  { expression: 'talk', text: 'Evalúa fórmulas de lógica de primer orden. Pero una fórmula solo es verdadera o falsa dentro de un mundo concreto: una interpretación.' },
-  { expression: 'talk', text: 'Con Gödel declararás el lenguaje: funciones y predicados con su aridad. Con Tarski construirás el mundo: un dominio y el significado de cada símbolo.' },
-  { expression: 'talk', text: 'Después escribirás la fórmula, y te diré si es verdadera o falsa, con un testigo o un contraejemplo como prueba.' },
+  { expression: 'neutral', text: 'Bienvenido. Soy Alan Turing. Has caído en mi taller; no te preocupes, aquí aprenderás a operar esta máquina.' },
+  { expression: 'talk', text: 'Aquí aprenderás a operar una máquina que sigue pasos precisos para comprobar fórmulas de lógica de primer orden.' },
+  { expression: 'talk', text: 'Después visitarás a Gödel para construir el lenguaje y a Tarski para darle significado. Sin ellos, una fórmula no puede evaluarse.' },
+  { expression: 'talk', text: 'Cuando termines el recorrido, encontrarás el camino de regreso.' },
   { expression: 'talk', text: 'Pero antes hay que ponerla en marcha. Pulsa el botón.', waitsForStart: true },
-  { expression: 'happy', text: '¡Mira cómo cobra vida! Así razona la máquina: lee, escribe y cambia de estado. Vamos al taller de Gödel.' },
+  { expression: 'happy', text: '¡La máquina despertó! Como operador, seguirás cada etapa y luego regresarás al examen con las herramientas necesarias.' },
 ];
 
 const LEAVE_MS = 1100; // duración de la salida hacia el Taller de Gödel
@@ -32,6 +32,8 @@ const NOTE_BIG_FROM = 1;
 export function Activation() {
   const markReady = useMachine((s) => s.markReady);
   const navigate = useNavigate();
+  const [briefingPage, setBriefingPage] = useState(1);
+  const [briefing, setBriefing] = useState(false);
   const [line, setLine] = useState(0);
   const [on, setOn] = useState(false);
   const [talking, setTalking] = useState(false);
@@ -90,7 +92,7 @@ export function Activation() {
 
   return (
     <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
-      <SceneInfo place="Laboratorio de computación, Mánchester" fact="Estamos en un laboratorio de computación de la Universidad de Mánchester, hacia 1948, porque ahí trabajó Turing con algunas de las primeras computadoras reales. Los bastidores llenos de válvulas encendidas del fondo eran esas máquinas: ese año la «Manchester Baby» ejecutó por primera vez un programa guardado en su propia memoria." />
+      <SceneInfo place="Taller de Turing · Fuera del tiempo" fact="Este taller es un espacio ficticio al que llegamos desde el salón de clases. Aquí Turing convierte los pasos abstractos de la lógica en operaciones que una máquina puede seguir." />
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>
@@ -102,8 +104,110 @@ export function Activation() {
         </motion.div>
       </div>
 
+      {briefing && (
+        <motion.div
+          className="mission-briefing"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="briefing-paper">
+            {briefingPage === 1 ? (
+              <>
+                <span className="briefing-kicker">Examen sorpresa · Salón de clases</span>
+                <h2>La pregunta del examen</h2>
+                <p className="briefing-lead">
+                  El examen de lógica matemática está frente a ti. La pregunta pide
+                  determinar cuándo una fórmula es verdadera.
+                </p>
+                <div className="case-file">
+                  <div className="case-file-header">
+                    <span>EXAMEN PARCIAL</span>
+                    <span>TIEMPO RESTANTE: 05:00</span>
+                  </div>
+                  <div className="case-message">
+                    <span className="case-message-label">Pregunta</span>
+                    <strong>¿CUÁNDO ES VERDADERA UNA FÓRMULA?</strong>
+                    <small>El problema pide construir un lenguaje, una interpretación y justificar el resultado.</small>
+                  </div>
+                  <div className="candidate-title">Lo que no tenemos claro</div>
+                  <div className="candidate-grid">
+                    {[
+                      ['1', 'Símbolos', '¿Qué significa cada nombre?'],
+                      ['2', 'Dominio', '¿Sobre qué objetos hablamos?'],
+                      ['3', 'Verdad', '¿Cómo se comprueba?'],
+                      ['4', 'Operaciones', 'Construye, interpreta y evalúa'],
+                    ].map(([number, title, detail]) => (
+                      <div className="candidate-card" key={number}>
+                        <strong>{number}</strong>
+                        <span>{title}</span>
+                        <small>{detail}</small>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="case-clue">
+                    <span className="case-message-label">La anomalía</span>
+                    <p>Un portal se abre en el salón. Al otro lado aparece un taller con una máquina encendida.</p>
+                  </div>
+                  <div className="case-conclusion">
+                    <span className="case-message-label">La decisión</span>
+                    <p>Al atravesarlo caerás en los talleres donde podrás resolver tus dudas.</p>
+                  </div>
+                </div>
+                <button type="button" className="briefing-start" onClick={() => setBriefingPage(2)}>
+                  Atravesar el portal <span>→</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="briefing-kicker">Página 2 · Taller de Turing</span>
+                <h2>El recorrido de aprendizaje</h2>
+                <div className="briefing-flow" aria-label="Proceso de comprobación">
+                  <div className="briefing-step">
+                    <span className="briefing-icon">⌁</span>
+                    <strong>Turing</strong>
+                    <small>La máquina y el operador</small>
+                  </div>
+                  <span className="briefing-arrow">→</span>
+                  <div className="briefing-step briefing-machine">
+                    <span className="briefing-icon">G</span>
+                    <strong>Gödel</strong>
+                    <small>El lenguaje formal</small>
+                  </div>
+                  <span className="briefing-arrow">→</span>
+                  <div className="briefing-step">
+                    <span className="briefing-icon">T</span>
+                    <strong>Tarski</strong>
+                    <small>El significado y la verdad</small>
+                  </div>
+                </div>
+                <div className="briefing-explain">
+                  <strong>Tu misión como operador</strong>
+                  <p>
+                    Turing te enseñará cómo una máquina puede seguir pasos precisos.
+                    Después Gödel te ayudará a construir el lenguaje de la fórmula y
+                    Tarski a darle una interpretación para saber cuándo es verdadera.
+                  </p>
+                  <p>
+                    Al final encontrarás un portal de regreso al salón. Allí podrás
+                    resolver el examen explicando cada operación.
+                  </p>
+                </div>
+                <small className="briefing-disclaimer">
+                  La historia es una aventura educativa: los personajes y el portal
+                  sirven para conectar los conceptos con el ejercicio del examen.
+                </small>
+                <button type="button" className="briefing-start" onClick={() => setBriefing(false)}>
+                  Entrar al taller de Turing <span>→</span>
+                </button>
+                <button type="button" className="briefing-back" onClick={() => setBriefingPage(1)}>← Volver al salón</button>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Después se despega y queda al frente, sobre el área visible y sin oscurecer. */}
-      {big && (
+      {!briefing && big && (
         <motion.div className="vn-note-exit" animate={leaving ? { x: '30%', y: '-20%', scale: 0.4, rotate: 10, opacity: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.5, 0, 0.75, 0] }}>
           {note}
@@ -111,9 +215,9 @@ export function Activation() {
       )}
 
       {/* Personaje y diálogo se colocan sobre el área visible, así nunca se recortan. */}
-      <Character name="turing" expression={current.expression} beat={line} talking={talking} leaving={leaving} />
+      {!briefing && <Character name="turing" expression={current.expression} beat={line} talking={talking} leaving={leaving} />}
 
-      <motion.div className="vn-dialog-wrap" animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4, delay: leaving ? 0.5 : 0 }}>
+      {!briefing && <motion.div className="vn-dialog-wrap" animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4, delay: leaving ? 0.5 : 0 }}>
       <DialogBox
         speaker="Alan Turing"
         text={current.text}
@@ -121,7 +225,7 @@ export function Activation() {
         onAdvance={advance}
         onTypingChange={setTalking}
       />
-      </motion.div>
+      </motion.div>}
     </section>
   );
 }
