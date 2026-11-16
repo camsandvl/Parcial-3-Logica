@@ -14,7 +14,7 @@ import { useMachine, type ModuleId } from './store/machine';
 /** Impide entrar por URL a un módulo que aún no se ha desbloqueado. */
 function Locked({ module, children }: { module: ModuleId; children: React.JSX.Element }) {
   const status = useMachine((s) => s.status[module]);
-  return status === 'locked' ? <Navigate to="/" replace /> : children;
+  return status === 'locked' ? <Navigate to="/activacion" replace /> : children;
 }
 
 const FADE_MS = 800;
@@ -25,6 +25,7 @@ function Scenes({ location }: { location: Location }) {
     <Routes location={location}>
       <Route path="/" element={<ExamRoom />} />
       <Route path="/turing" element={<Locked module="activation"><Activation /></Locked>} />
+      <Route path="/activacion" element={<Activation />} />
       <Route path="/lenguaje" element={<Locked module="language"><LanguageWorkshop /></Locked>} />
       <Route path="/universo" element={<Locked module="universe"><UniverseRoom /></Locked>} />
       <Route path="/consola" element={<Locked module="console"><Console /></Locked>} />
@@ -52,6 +53,7 @@ export default function App() {
   }, [location]);
 
   return (
+    <>
     <div className="machine">
       <ControlPanel />
       <main className="stage">
@@ -70,5 +72,6 @@ export default function App() {
         })}
       </main>
     </div>
+    </>
   );
 }

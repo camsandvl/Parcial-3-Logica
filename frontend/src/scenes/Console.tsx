@@ -159,7 +159,7 @@ export function Console() {
     else processNow();
   };
 
-  /** Salida animada y luego la evaluación (el informe muestra el procesamiento). */
+  /** Valida la interpretación antes de iniciar la salida animada. */
   const processNow = async () => {
     setBusy(true);
     const interpretation = await api.validateInterpretation(s.language, s.interpretation);
@@ -171,7 +171,28 @@ export function Console() {
       return;
     }
     setPhase('leaving');
-    setTimeout(async () => {
+  };
+
+  // Espera a que la última línea se termine de escribir antes de abrir el informe.
+  const spoke = useRef(false);
+  const [exiting, setExiting] = useState(false);
+  useEffect(() => {
+    if (phase !== 'leaving') return;
+    if (talking) { spoke.current = true; return; }
+    if (!spoke.current) return;
+    const id = setTimeout(() => setExiting(true), 900);
+    return () => clearTimeout(id);
+  }, [phase, talking]);
+
+  // Turing sale y el diálogo se desvanece; luego se evalúa y se pasa al informe.
+  useEffect(() => {
+    if (!exiting) return;
+    const id = setTimeout(goToReport, LEAVE_MS);
+    return () => clearTimeout(id);
+  }, [exiting]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const goToReport = () => {
+    void (async () => {
       s.setResult(null);
       navigate('/informe');
       const res = await api.evaluate({ language: s.language, interpretation: s.interpretation, formula: s.formula, environment: s.environment });
@@ -183,7 +204,7 @@ export function Console() {
         s.markError('console');
         navigate('/consola');
       }
-    }, LEAVE_MS);
+    })();
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -279,9 +300,9 @@ export function Console() {
       )}
 
       <Character name="turing" expression={shown.expression} beat={phase === 'intro' ? line : phase === 'error' ? 100 + s.errors.length : phase === 'env' ? 200 : phase === 'leaving' ? 300 : 10}
-        talking={talking} leaving={leaving} side="right" />
+        talking={talking} leaving={exiting} side="right" />
 
-      <motion.div className="vn-dialog-wrap" animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4, delay: leaving ? 0.5 : 0 }}>
+      <motion.div className="vn-dialog-wrap" animate={{ opacity: exiting ? 0 : 1 }} transition={{ duration: 0.4, delay: exiting ? 0.5 : 0 }}>
         <DialogBox speaker="Alan Turing" side="right" text={shown.text} canAdvance={phase === 'intro'} onAdvance={advance} onTypingChange={setTalking} />
       </motion.div>
     </section>

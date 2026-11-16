@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { TraceNode } from '@contracts/types';
@@ -70,12 +70,12 @@ function preorder(n: TraceNode, path = 'r'): Step[] {
 const roleOf = (n: TraceNode): CharacterName => (['forall', 'exists', 'pred'].includes(n.node) ? 'tarski' : 'godel');
 
 export function Report() {
-  const { result, formula, ast } = useMachine();
+  const { result, formula, ast, interpretation, environment } = useMachine();
   const navigate = useNavigate();
   const [minDone, setMinDone] = useState(false);
   const [line, setLine] = useState(0);
   const [talking, setTalking] = useState(false);
-  const [picked, setPicked] = useState<Step | null>(null); // parte elegida con clic al final
+  const [picked, setPicked] = useState<(Step & { text?: string }) | null>(null); // parte elegida con clic al final
 
   useEffect(() => { const id = setTimeout(() => setMinDone(true), MIN_PROCESS_MS); return () => clearTimeout(id); }, []);
 
@@ -101,10 +101,38 @@ export function Report() {
 
   const current: Line = !done
     ? { who: 'turing', expression: 'talk', text: 'La máquina está leyendo tu fórmula… lee, escribe y cambia de estado.' }
-    : picked ? { who: roleOf(picked.node), expression: 'talk', text: `${picked.node.text} es ${vf(picked.node.value)}. ${explain(picked.node)}` }
+    : picked ? { who: roleOf(picked.node), expression: 'talk', text: picked.text ?? `${picked.node.text} es ${vf(picked.node.value)}. ${explain(picked.node)}` }
     : lines[line];
 
   const who = current.who;
+
+  // La fórmula nunca se parte en dos líneas: si es larga, la nota se achica hasta caber entre el
+  // sello y el borde derecho de la columna (los botones quedan afuera, a la derecha).
+  // (el encabezado aparece después de que sale la animación de «procesando»: se mide al montarse)
+  const [head, setHead] = useState<HTMLElement | null>(null);
+  const formulaRef = useRef<HTMLElement>(null);
+  const [formulaFit, setFormulaFit] = useState({ scale: 1, wrap: false, max: 0 });
+  useLayoutEffect(() => {
+    const el = formulaRef.current;
+    if (!head || !el) return;
+    const fit = () => {
+      const stamp = head.querySelector('.stamp') as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(head).columnGap) || 0;
+      const avail = head.clientWidth - (stamp?.offsetWidth ?? 0) - gap;
+      // ancho natural en una línea (se mide sin cortes y a tamaño completo)
+      const prev = { ws: el.style.whiteSpace, fs: el.style.fontSize, mw: el.style.maxWidth };
+      el.style.whiteSpace = 'nowrap'; el.style.maxWidth = 'none'; el.style.fontSize = '';
+      const natural = el.scrollWidth;
+      Object.assign(el.style, { whiteSpace: prev.ws, fontSize: prev.fs, maxWidth: prev.mw });
+      const ratio = avail / natural;
+      // Hasta el 60 % se achica en una línea; si aun así no cabe (fórmulas muy largas), pasa a dos líneas
+      setFormulaFit(ratio >= 0.6 ? { scale: Math.min(1, ratio), wrap: false, max: 0 } : { scale: 0.6, wrap: true, max: avail });
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(head);
+    return () => ro.disconnect();
+  }, [head, formula]);
 
   // Un personaje a la vez: cuando cambia quien habla, el actual sale y luego entra el otro.
   const [stage, setStage] = useState<{ who: CharacterName; leaving: boolean }>({ who, leaving: false });
@@ -131,8 +159,8 @@ export function Report() {
             </motion.div>
           ) : (
             <motion.div key="res" className="report-result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <header className="report-head">
-                <code className="report-formula">{formula}</code>
+              <header className="report-head" ref={setHead}>
+                <code className="report-formula" ref={formulaRef} style={{ fontSize: `calc(${1.9 * formulaFit.scale} * var(--u))`, ...(formulaFit.wrap ? { whiteSpace: 'normal', maxWidth: formulaFit.max, flex: '1 1 auto' } : {}) }}>{formula}</code>
                 <motion.span className={`stamp ${value ? 'is-true' : 'is-false'}`}
                   initial={{ scale: 2.4, opacity: 0, rotate: -18 }} animate={{ scale: 1, opacity: 1, rotate: -6 }}
                   transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.15 }}>
@@ -149,8 +177,8 @@ export function Report() {
 
               <div className="report-tree">
                 {root && revealed > 0 && (
-                  <FormulaTree ast={ast} root={root} shown={shown} current={currentPath} overview={finished}
-                    onPick={(path, node) => { if (finished) setPicked(picked?.path === path ? null : { path, node }); }} />
+                  <FormulaTree ast={ast} root={root} shown={shown} current={currentPath} overview={finished} interpretation={interpretation} environment={environment}
+                    onPick={(path, node, text) => { if (finished) setPicked(picked?.path === path ? null : { path, node, text }); }} />
                 )}
                 {finished && picked && (
                   <button type="button" className="ft-all btn-ghost btn-small" onClick={() => setPicked(null)}>Ver todo el árbol</button>
