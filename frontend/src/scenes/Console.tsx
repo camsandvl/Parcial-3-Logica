@@ -22,7 +22,7 @@ type Phase = 'intro' | 'write' | 'error' | 'env' | 'leaving';
 interface Line { expression: Expression; text: string }
 
 const INTRO: Line[] = [
-  { expression: 'happy', text: '¡Volviste al taller de Turing! Ya tienes el lenguaje de Gödel y el mundo de Tarski.' },
+  { expression: 'happy', text: '¡Has vuelto a mi taller! Ya tienes el lenguaje que construiste con Gödel y el mundo que definiste con Tarski.' },
   { expression: 'talk', text: 'Escribe una fórmula. La máquina comprobará su estructura y la evaluará en la interpretación que construiste.' },
 ];
 const WRITE: Line = { expression: 'talk', text: 'Escribe con las teclas de la máquina o con tu teclado. Pasa el mouse por una tecla para ver qué significa. Cuando esté lista, analízala.' };
@@ -231,7 +231,7 @@ export function Console() {
 
   return (
     <section className="vn-scene vn-scene-turing vn-scene-console" aria-label="Escena 4: Consola">
-      <SceneInfo place="Taller de Turing · Última práctica" fact="Después de pasar por los talleres de Turing, Gödel y Tarski, el operador vuelve a la consola para escribir la fórmula del examen y comprobarla paso a paso." />
+      <SceneInfo place="Mi taller · Última práctica" fact="Después de pasar por los talleres, vuelves a mi consola para escribir la fórmula del examen y comprobarla paso a paso." />
       <div className="vn-stage">
         <img className="vn-bg" src="/assets/scene5/bg-hut8.png" alt="" draggable={false} />
       </div>

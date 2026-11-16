@@ -41,7 +41,7 @@ function explain(n: TraceNode): string {
         ? `Se cumple para cada elemento del dominio: se revisaron los ${checked} y ninguno falló.`
         : `Ningún elemento del dominio la cumple: se revisaron los ${checked} y todos dieron falso.`;
     case 'atomic':
-      return `Se consulta directamente el mundo de Tarski: ${n.text} ${n.value ? 'está' : 'no está'} entre los casos donde el predicado es verdadero.`;
+      return `Se consulta directamente mi interpretación: ${n.text} ${n.value ? 'está' : 'no está'} entre los casos donde el predicado es verdadero.`;
     default: {
       const [a, b] = n.children;
       switch (n.node) {

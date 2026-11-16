@@ -92,7 +92,7 @@ export function Activation() {
 
   return (
     <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
-      <SceneInfo place="Taller de Turing · Fuera del tiempo" fact="Este taller es un espacio ficticio al que llegamos desde el salón de clases. Aquí Turing convierte los pasos abstractos de la lógica en operaciones que una máquina puede seguir." />
+      <SceneInfo place="Mi taller · Fuera del tiempo" fact="Este taller es un espacio ficticio al que llegamos desde el salón de clases. Aquí convierto los pasos abstractos de la lógica en operaciones que una máquina puede seguir." />
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>
