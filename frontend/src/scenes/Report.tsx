@@ -21,7 +21,7 @@ const SWAP_MS = 950;       // lo que tarda un personaje en salir antes de que en
 const MIN_PROCESS_MS = 2600; // la animación de la máquina se ve completa aunque el backend sea rápido
 
 
-const NAMES: Record<CharacterName, string> = { turing: 'Alan Turing', godel: 'Kurt Gödel', tarski: 'Alfred Tarski' };
+const NAMES: Record<CharacterName, string> = { turing: 'Alan Turing', godel: 'Kurt Gödel', tarski: 'Alfred Tarski', mario: 'Mario, el catedrático' };
 
 interface Line { who: CharacterName; expression: Expression; text: string }
 

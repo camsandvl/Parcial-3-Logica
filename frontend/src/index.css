@@ -160,7 +160,12 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
    queda justo encima del diálogo; lo de abajo lo tapan el diálogo y el borde. */
 /* El botón del portal va debajo del portal (en el centro taparía a la estudiante) */
 .vn-scene-exam .exam-portal-button { left: 72.5%; bottom: 30%; transform: none; }
-.vn-scene-exam .exam-end-button { left: auto; right: 6%; bottom: 24%; } /* escena final: a la derecha, sin tapar a la estudiante */
+/* Escena final: Mario en la esquina derecha, como los matemáticos en sus escenas, mirando hacia
+   la estudiante; el diálogo queda delante de él */
+.vn-scene-exam-return .vn-character { left: auto; right: -4%; height: 92%; bottom: -10%; z-index: 6; } /* tamaño de Gödel y Tarski en sus escenas */
+.vn-scene-exam-return .rp-mario .vn-flip { transform: scaleX(-1); } /* que mire hacia la estudiante */
+.vn-scene-exam-return .vn-dialog { z-index: 7; }
+.vn-scene-exam .exam-end-button { left: 4%; right: auto; bottom: 22%; z-index: 8; } /* a la izquierda: a la derecha chocaría con la placa de Mario */
 /* Portal de la escena 0: el remolino (sin el anillo de CSS), girando y latiendo despacio */
 .vn-scene-exam .exam-portal {
   left: 54%; top: 23%; width: 38%; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none;
@@ -1345,6 +1350,7 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-dialog.tone-turing .vn-nameplate { background: #2b5797; }
 .vn-dialog.tone-godel .vn-nameplate { background: #7a3566; }
 .vn-dialog.tone-tarski .vn-nameplate { background: #2e5e4e; }
+.vn-dialog.tone-mario .vn-nameplate { background: #c2477a; } /* el rosa de su camisa */
 .vn-scene-report .vn-dialog { right: calc(86cqh * 810 / 1110 - 4cqw + 1cqw); }
 
 /* Un personaje a la vez, a la derecha (mismo lugar para los tres) */

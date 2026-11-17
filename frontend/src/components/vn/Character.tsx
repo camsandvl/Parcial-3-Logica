@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 export type Expression = 'neutral' | 'talk' | 'happy' | 'confused';
-export type CharacterName = 'turing' | 'godel' | 'tarski';
+export type CharacterName = 'turing' | 'godel' | 'tarski' | 'mario';
 
 /** Archivo (en public/assets/characters/<nombre>/cutout/) de cada expresión.
  *  Si un personaje no tiene una expresión, se usa la neutral. */
@@ -11,6 +11,8 @@ const FILES: Record<CharacterName, Partial<Record<Expression, string>>> = {
   turing: { neutral: 'variation_1_neutral', talk: 'variation_3_hablando', happy: 'variation_2_feliz' },
   godel: { neutral: 'godel-neutral', talk: 'godel-talking', happy: 'godel-happy', confused: 'godel-confused' },
   tarski: { neutral: 'tarski-neutral', talk: 'tarski-talking', happy: 'tarski-happy', confused: 'tarski-confused' },
+  // Mario, el catedrático (escena final): una sola expresión, sonriente
+  mario: { neutral: 'mario-neutral' },
 };
 
 /** URLs de todas las expresiones de un personaje (para precargarlas antes de su escena). */
