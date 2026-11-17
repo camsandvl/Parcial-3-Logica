@@ -29,7 +29,7 @@ type Phase = 'intro' | 'build' | 'warn' | 'error' | 'example' | 'done';
 interface Line { expression: Expression; text: string }
 
 const INTRO: Line[] = [
-  { expression: 'neutral', text: 'Soy Alfred Tarski. Yo te di los símbolos; ahora construiremos el mundo que les dará significado.' },
+  { expression: 'neutral', text: 'Soy Alfred Tarski. Gödel te dio los símbolos; ahora construiremos el mundo que les dará significado.' },
   { expression: 'talk', text: '«La nieve es blanca» es verdadera si y solo si la nieve es blanca. Una afirmación es verdadera cuando coincide con el mundo.' },
   { expression: 'talk', text: 'Así que construyamos ese mundo: un dominio, qué hace cada función y dónde se cumple cada predicado. Eso es una interpretación.' },
 ];
@@ -233,7 +233,7 @@ export function UniverseRoom() {
 
   return (
     <section className="vn-scene vn-scene-tarski" aria-label="Escena 3: Sala de Tarski">
-      <SceneInfo photo={{ src: '/assets/notes/tarski.webp', alt: 'Alfred Tarski sonriendo frente a una pizarra llena de fórmulas', caption: 'Alfred Tarski frente a la pizarra.' }} place="Mi aula de Varsovia, 1933" fact="Estamos en un aula de Varsovia en el invierno de 1933 porque enseñé durante años en un liceo de esta ciudad, y ese año publiqué mi definición de verdad. La nieve que cae por la ventana es un guiño a mi ejemplo: «La nieve es blanca» es verdadera si y solo si la nieve es blanca." />
+      <SceneInfo year={1933} photo={{ src: '/assets/notes/tarski.webp', alt: 'Alfred Tarski sonriendo frente a una pizarra llena de fórmulas', caption: 'Alfred Tarski frente a la pizarra.' }} place="Mi aula de Varsovia, 1933" fact="Estamos en un aula de Varsovia en el invierno de 1933 porque enseñé durante años en un liceo de esta ciudad, y ese año publiqué mi definición de verdad. La nieve que cae por la ventana es un guiño a mi ejemplo: «La nieve es blanca» es verdadera si y solo si la nieve es blanca." />
       <div className="vn-stage">
         <img className="vn-bg" src={BG} alt="" draggable={false} />
       </div>

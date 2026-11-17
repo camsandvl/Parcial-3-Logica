@@ -15,14 +15,14 @@ interface Polaroid {
 }
 
 const POLAROIDS: Polaroid[] = [
-  { src: '/assets/notes/manchester-lab.webp', alt: 'Las primeras computadoras de la Universidad de Mánchester', caption: 'Mánchester, 1949',
+  { src: '/assets/notes/manchester-lab.webp', alt: 'Las primeras computadoras de la Universidad de Mánchester', caption: 'Mánchester, 1948',
     style: { left: 'calc(-7 * var(--iu))', top: 'calc(-6 * var(--iu))', width: 'calc(36 * var(--iu))' }, rotate: -9, depth: 1.4, ratio: '4 / 3' },
-  { src: '/assets/notes/tarski.webp', alt: 'Alfred Tarski frente a una pizarra', caption: 'Tarski y su pizarra',
+  { src: '/assets/notes/tarski.webp', alt: 'Alfred Tarski frente a una pizarra', caption: 'Varsovia, 1933',
     style: { right: 'calc(-4 * var(--iu))', top: 'calc(-9 * var(--iu))', width: 'calc(29 * var(--iu))' }, rotate: 8, depth: 1, ratio: '1 / 1' },
-  { src: '/assets/notes/godel.jpg', alt: 'Retrato de Kurt Gödel', caption: 'Gödel, pensando',
+  { src: '/assets/notes/godel.jpg', alt: 'Retrato de Kurt Gödel', caption: 'Viena, 1931',
     style: { left: 'calc(-3 * var(--iu))', bottom: 'calc(-13 * var(--iu))', width: 'calc(28 * var(--iu))' }, rotate: 6, depth: 0.8, ratio: '1 / 1' },
-  { src: '/assets/notes/bletchley-park.webp', alt: 'Alan Turing con colegas criptoanalistas', caption: 'Bletchley Park',
-    style: { right: 'calc(-9 * var(--iu))', bottom: 'calc(-8 * var(--iu))', width: 'calc(38 * var(--iu))' }, rotate: -6, depth: 1.6, ratio: '4 / 3' },
+  { src: '/assets/notes/bletchley-park.webp', alt: 'Alan Turing con colegas criptoanalistas', caption: 'Bletchley Park, 1941',
+    style: { right: 'calc(-9 * var(--iu))', bottom: 'calc(-10.5 * var(--iu))', width: 'calc(38 * var(--iu))' }, rotate: -6, depth: 1.6, ratio: '4 / 3' },
 ];
 
 /**
@@ -39,35 +39,38 @@ interface Scribble { d: string; view: string; style: CSSProperties; color: strin
 const SCRIBBLES: Scribble[] = [
   // espiral: arriba a la izquierda del título
   { d: 'M50 50 m-3 0 a3 3 0 1 1 6 0 a7 7 0 1 1 -14 0 a11 11 0 1 1 22 0 a15 15 0 1 1 -30 0 a19 19 0 1 1 38 0', view: '0 0 100 100',
-    style: { ...at(-20, -23), width: 'calc(5 * var(--iu))' }, color: '#7a3566', delay: 1.1 },
+    style: { ...at(-23, -25), width: 'calc(5 * var(--iu))' }, color: '#7a3566', delay: 1.1 },
   // flecha curva: en el hueco de la izquierda, apunta al subtítulo
   { d: 'M5 70 C 25 20, 70 5, 105 30 M92 16 L106 31 L88 37', view: '0 0 115 80',
     style: { ...at(-35, 0.5, '-10deg'), width: 'calc(8 * var(--iu))' }, color: '#2b5797', delay: 1.4 },
-  // estrella: arriba a la derecha del título
-  { d: 'M50 6 L61 38 L95 38 L67 58 L78 92 L50 71 L22 92 L33 58 L5 38 L39 38 Z', view: '0 0 100 100',
-    style: { ...at(17, -21.5, '12deg'), width: 'calc(4 * var(--iu))' }, color: '#c98a1e', delay: 1.6 },
-  // zigzag: a la derecha del botón
+  // reloj: arriba a la derecha del título (el viaje es en el tiempo)
+  { d: 'M50 12 a38 38 0 1 1 -0.1 0 M50 4 L50 12 M44 4 L56 4 M50 50 L50 26 M50 50 L67 60 M50 18 L50 22 M82 50 L78 50 M50 82 L50 78 M18 50 L22 50', view: '0 0 100 100',
+    style: { ...at(17, -25, '12deg'), width: 'calc(4.6 * var(--iu))' }, color: '#c98a1e', delay: 1.6 },
+  // zigzag: a la derecha de «o presiona Enter»
   { d: 'M5 30 Q 15 5, 25 30 T 45 30 T 65 30 T 85 30 T 105 30', view: '0 0 110 45',
-    style: { ...at(11.5, 11, '-6deg'), width: 'calc(6 * var(--iu))' }, color: '#2e5e4e', delay: 1.8 },
+    style: { ...at(8, 19, '-6deg'), width: 'calc(6 * var(--iu))' }, color: '#2e5e4e', delay: 1.8 },
   // bucles: a la izquierda del botón
   { d: 'M5 40 C 15 5, 35 5, 30 30 C 25 50, 50 50, 50 25 C 50 5, 75 5, 70 30 C 65 50, 90 50, 95 20', view: '0 0 100 55',
-    style: { ...at(-19.5, 12, '8deg'), width: 'calc(8 * var(--iu))' }, color: '#1d1a33', delay: 2 },
+    style: { ...at(-22.5, 11.5, '8deg'), width: 'calc(8 * var(--iu))' }, color: '#1d1a33', delay: 2 },
 ];
+
+/** Paradas del viaje: del salón de hoy a las escenas, y de regreso. */
+const ROUTE = ['2026', '1941', '1931', '1933', '1948', '2026'];
 
 /** Símbolos de lógica escritos a mano, sueltos por la hoja. */
 const NOTES: Array<{ text: string; style: CSSProperties; color: string; size: number }> = [
-  { text: '∀x', style: at(-8, -25, '-12deg'), color: '#2b5797', size: 3.4 },
-  { text: '∃y', style: at(9, -24.5, '9deg'), color: '#7a3566', size: 3.2 },
+  { text: '∀x', style: at(-11, -27.5, '-12deg'), color: '#2b5797', size: 3.4 },
+  { text: '∃y', style: at(9.5, -27, '9deg'), color: '#7a3566', size: 3.2 },
   { text: 'P(x) → Q(x)', style: at(-48, 5, '-5deg'), color: '#1d1a33', size: 2.2 },
   { text: 'D = {1, 2, 3}', style: at(25, -1.5, '4deg'), color: '#2e5e4e', size: 2.2 },
-  { text: '¬', style: at(39, -4, '-8deg'), color: '#1d1a33', size: 3 },
-  { text: 'V / F', style: at(-15, 18.5, '7deg'), color: '#b0332a', size: 2.4 },
+  { text: '¬', style: at(39, -1.5, '-8deg'), color: '#1d1a33', size: 3 },
+  { text: 'V / F', style: at(-18, 19.5, '7deg'), color: '#b0332a', size: 2.4 },
 ];
 
 export function Intro() {
   const navigate = useNavigate();
   const root = useRef<HTMLElement>(null);
-  const start = () => navigate('/activacion');
+  const start = () => navigate('/salon');
 
   // Enter también empieza
   useEffect(() => {
@@ -121,6 +124,9 @@ export function Intro() {
       ))}
 
       <div className="intro-center">
+        <motion.span className="intro-kicker" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}>
+          un viaje en el tiempo con
+        </motion.span>
         <motion.h1 className="intro-title" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.7 }}>
           <span>La Máquina</span>
           <span>de Turing</span>
@@ -132,12 +138,18 @@ export function Intro() {
           <motion.path d="M40 32 C 140 22, 300 36, 440 28" fill="none" stroke="#2b5797" strokeWidth="3" strokeLinecap="round" opacity=".6"
             initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.5, duration: 0.7, ease: 'easeInOut' }} />
         </svg>
-        <motion.p className="intro-sub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.6 }}>
-          un evaluador semántico de lógica de primer orden
-        </motion.p>
+        {/* la ruta del viaje, escrita a mano: cada año aparece como una parada */}
+        <ol className="intro-route" aria-label="Ruta del viaje">
+          {ROUTE.map((y, i) => (
+            <motion.li key={i} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.5 + i * 0.12, type: 'spring', stiffness: 260, damping: 15 }}>
+              {y}
+            </motion.li>
+          ))}
+        </ol>
         <motion.button type="button" className="intro-start" onClick={start}
           initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.8, type: 'spring', stiffness: 220, damping: 16 }}>
-          ▶ Comenzar
+          ▶ Viajar en el tiempo
         </motion.button>
         <motion.span className="intro-hint" initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} transition={{ delay: 2.4 }}>
           o presiona Enter

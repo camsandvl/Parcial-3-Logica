@@ -153,6 +153,9 @@ const NODE_H = 5.4;
 const TERM_H = 4.4;
 const LEVEL = 13;   // distancia vertical entre niveles (deja lugar para la nota de la parte que se explica y la etiqueta del hilo)
 const GAP = 3.5;    // separación horizontal entre subárboles
+/** En la vista general no hay nota ni casos debajo de ninguna parte: los niveles se juntan a
+ *  esta distancia y el árbol completo cabe más grande. */
+const OVERVIEW_LEVEL = 8.6;
 // Un símbolo por nodo: notas pequeñas y parejas, como el árbol que se dibuja en clase
 const nodeW = (n: TNode) => Math.max(n.term ? 5.5 : 7.5, n.sym.length * (n.term ? 1.6 : 2) + 4.5, n.meta.length * 0.8 + 2.5);
 const nodeH = (n: TNode) => (n.term ? TERM_H : NODE_H);
@@ -326,14 +329,23 @@ export function FormulaTree({ ast, root, shown, current, overview, onPick, inter
   // Con una parte enfocada (en el recorrido o elegida con clic al final) la escena es la misma
   const inScene = (p: Placed) => !cur || p.y <= cur.y || kids.includes(p);
 
+  // Desplazamiento vertical de cada nota (hacia arriba, en px): lo que sube al irse (LIFT) más,
+  // en la vista general, lo que se acerca su nivel al de arriba (niveles juntos).
+  const LIFT = 80;
+  const focusTop = !cur ? -Infinity : cur.y; // todo lo que está arriba de la parte actual se va
+  const lift = (p: Placed) => (p.y < focusTop ? LIFT * u : 0);
+  const squeeze = overview && !cur ? 1 - OVERVIEW_LEVEL / LEVEL : 0;
+  const off = (p: Placed) => lift(p) + p.y * squeeze * u;
+
   // Cámara: en el recorrido enmarca ese nivel; en la vista general, el árbol completo
   // (o, si se eligió una parte al final, esa parte).
   const camera = (() => {
     if (!view.w) return { x: 0, y: 0, s: 1 };
     let x0: number, x1: number, y0: number, y1: number;
-    if (overview && !cur) { x0 = 0; x1 = width; y0 = 0; y1 = height; }
+    if (overview && !cur) { x0 = 0; x1 = width; y0 = 0; y1 = Math.max(...nodes.map((p) => p.y - off(p) / u + p.h)) + 1.5; }
     else {
-      const focus = !cur ? [byPath.r] : [...sibs, ...kids];
+      // solo lo que ya se ve: una parte que todavía no aparece no debe alejar la cámara
+      const focus = !cur ? [byPath.r] : [...sibs, ...kids].filter((f) => f === cur || overview || shown.has(f.n.reveal));
       x0 = Math.min(...focus.map((f) => f.x - f.w / 2)); x1 = Math.max(...focus.map((f) => f.x + f.w / 2));
       y0 = Math.min(...focus.map((f) => f.y)); y1 = Math.max(...focus.map((f) => f.y + f.h + (rowsOf(f) ? 3 + rowsOf(f) * 3.1 : f === cur ? 6 : 1.5)));
     }
@@ -354,15 +366,13 @@ export function FormulaTree({ ast, root, shown, current, overview, onPick, inter
   const worldStyle = { width: width * u, height: height * u };
 
   // Las notas que quedan por encima de la parte enfocada se van del todo hacia arriba:
-  // se desplazan LIFT unidades (bastante más que el alto de la pantalla) y su hilo se estira.
-  const LIFT = 80;
-  const focusTop = !cur ? -Infinity : cur.y; // todo lo que está arriba de la parte actual se va
-  const lift = (p: Placed) => (p.y < focusTop ? LIFT * u : 0);
+  // se desplazan LIFT unidades (bastante más que el alto de la pantalla) y su hilo se estira
+  // (ver off(), arriba).
   // Dónde estaba cada nota en el paso anterior: un hilo NUEVO nace desde ahí y viaja con su nota
   // (si naciera ya en la posición final, mientras la nota de arriba todavía sube el hilo se va de lado).
   const prevLift = useRef<Record<string, number>>({});
-  const liftWas = (p: Placed) => prevLift.current[p.path] ?? lift(p);
-  useEffect(() => { prevLift.current = Object.fromEntries(nodes.map((n) => [n.path, lift(n)])); });
+  const liftWas = (p: Placed) => prevLift.current[p.path] ?? off(p);
+  useEffect(() => { prevLift.current = Object.fromEntries(nodes.map((n) => [n.path, off(n)])); });
 
   // Color del hilo: verde/rojo según el valor de la parte de abajo; las partes sin evaluar y los
   // términos cuelgan de un hilo de cáñamo (sin valor).
@@ -387,7 +397,7 @@ export function FormulaTree({ ast, root, shown, current, overview, onPick, inter
               const a = (p.y + p.h) * u - ly1, b = n.y * u - ly2, my = (a + b) / 2;
               return { d: `M${x1} ${a} C${x1} ${my + sag}, ${x2} ${my + sag}, ${x2} ${b}`, y1: a, y2: b };
             };
-            const { d, y1, y2 } = path(lift(p), lift(n));
+            const { d, y1, y2 } = path(off(p), off(n));
             const was = path(liftWas(p), liftWas(n));
             return (
               <motion.g key={n.path} className={cord(n.n)} exit={{ opacity: 0, transition: { duration: 0.4 } }}>
@@ -405,7 +415,7 @@ export function FormulaTree({ ast, root, shown, current, overview, onPick, inter
           const p = byPath[n.parent!];
           const mx = (lift(p) ? n.x : (p.x + n.x) / 2) * u;
           // si la nota de arriba ya se fue, la etiqueta queda en el hilo justo encima de la parte actual
-          const my = lift(p) ? (n.y - lift(n) / u - 3.2) * u : ((p.y + p.h - lift(p) / u) + (n.y - lift(n) / u)) / 2 * u;
+          const my = lift(p) ? (n.y - off(n) / u - 3.2) * u : ((p.y + p.h - off(p) / u) + (n.y - off(n) / u)) / 2 * u;
           const d = p.n.trace!.decisive!;
           return (
             <motion.span key={`lbl-${n.path}`} className="ft-assign" style={{ fontSize: u }}
@@ -429,7 +439,7 @@ export function FormulaTree({ ast, root, shown, current, overview, onPick, inter
             const l = withCases ? null : lookup(t, interpretation);
             return (
               <motion.div key={p.path} className="ft-slot" style={{ left: (p.x - p.w / 2) * u, top: p.y * u, width: p.w * u }}
-                initial={false} animate={{ y: -lift(p), opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.4 } }} transition={drift}>
+                initial={false} animate={{ y: -off(p), opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.4 } }} transition={drift}>
                 <motion.button type="button"
                   className={`ft-node ${val === undefined ? 'is-idle' : val ? 'is-true' : 'is-false'} ${!t && val !== undefined ? 'is-agg' : ''} ${n.term ? 'is-term' : ''} ${cur?.path === p.path ? 'is-sel' : ''} ${cur && sibs.includes(p) && p !== cur ? 'is-dim' : ''}`}
                   style={{ height: p.h * u, fontSize: u, rotate: `${tilt(p.path)}deg` }}

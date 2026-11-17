@@ -9,7 +9,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 /** Foto de época que acompaña al dato (opcional): se pega en la nota como una copia impresa. */
 export interface InfoPhoto { src: string; alt: string; caption: string }
 
-export function SceneInfo({ place, fact, photo }: { place: string; fact: string; photo?: InfoPhoto }) {
+/**
+ * `year`: año en el que ocurre la escena. Se muestra grande, como una hoja de calendario, en la
+ * misma fila que el botón «i»: así siempre se sabe a qué época saltó el viaje.
+ */
+export function SceneInfo({ place, fact, photo, year }: { place: string; fact: string; photo?: InfoPhoto; year?: number }) {
   const [open, setOpen] = useState(false);
   const note = useRef<HTMLDivElement>(null);
 
@@ -26,6 +30,13 @@ export function SceneInfo({ place, fact, photo }: { place: string; fact: string;
   return (
     <>
       <div className="scene-info">
+        {year !== undefined && (
+          <motion.div className="scene-year" aria-label={`Año ${year}`}
+            initial={{ opacity: 0, scale: 1.5, rotate: -10 }} animate={{ opacity: 1, scale: 1, rotate: -3 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 1.2 }}>
+            <span className="scene-year-num">{year}</span>
+          </motion.div>
+        )}
         <button type="button" className="scene-info-btn" onClick={() => setOpen(true)}
           aria-haspopup="dialog" aria-label="Ver dato curioso sobre este lugar">
           i

@@ -154,6 +154,31 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
   border-radius: 99px;
   background: rgba(235, 190, 135, .23);
 }
+/* Estudiante de la escena 0: en primer plano, más cerca que la primera fila del fondo. Es grande
+   a propósito: el borde inferior de la pantalla la corta justo debajo del tablero, así no se ven
+   sus piernas ni las patas del escritorio y la perspectiva cuadra con la del salón. El tablero
+   queda justo encima del diálogo; lo de abajo lo tapan el diálogo y el borde. */
+/* El botón del portal va debajo del portal (en el centro taparía a la estudiante) */
+.vn-scene-exam .exam-portal-button { left: 72.5%; bottom: 30%; transform: none; }
+.vn-scene-exam .exam-end-button { left: auto; right: 6%; bottom: 24%; } /* escena final: a la derecha, sin tapar a la estudiante */
+/* Portal de la escena 0: el remolino (sin el anillo de CSS), girando y latiendo despacio */
+.vn-scene-exam .exam-portal {
+  left: 54%; top: 23%; width: 38%; aspect-ratio: 1; border: 0; border-radius: 0; background: none; box-shadow: none;
+  z-index: 0; /* detrás de la estudiante: se asoma por su costado */
+}
+.exam-portal-swirl {
+  width: 100%; height: 100%; object-fit: contain; pointer-events: none;
+  filter: drop-shadow(0 0 1.5cqw rgba(150, 120, 255, .7));
+  animation: portal-spin 7s linear infinite, portal-breathe 2.4s ease-in-out infinite;
+}
+@keyframes portal-spin { to { rotate: 360deg; } }
+@keyframes portal-breathe { 50% { scale: 1.06; } }
+.vn-stage .scene0-student {
+  position: absolute; z-index: 1; left: 27.36%; top: 29.94%; width: 42.54%; height: auto; pointer-events: none; /* incluye el borde crema (26 px de margen en la imagen) */
+  filter: drop-shadow(0 calc(.6 * var(--u)) calc(1.2 * var(--u)) rgba(40, 25, 10, .25));
+}
+.scene0-student img { display: block; width: 100%; height: auto; }
+.scene0-student img + img { position: absolute; inset: 0; } /* la de susto, encima de la normal */
 .exam-paper {
   position: absolute;
   left: 16%;
@@ -399,6 +424,8 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
    Es contenedor: todo lo de adentro se mide en cqw DE LA NOTA, así escala con ella. */
 .vn-machine { position: absolute; left: 42%; top: 23%; width: 30%; container-type: inline-size; }
 .vn-machine.is-big { left: auto; right: 3%; top: 4%; width: min(56cqw, 96cqh); }
+/* Escena 1 (Hut 8): clavada en la pared, un poco más a la izquierda (puede quedar detrás de Turing) */
+.vn-scene-turing:not(.vn-scene-console) .vn-machine:not(.is-big) { left: 33%; }
 .machine-base { display: block; width: 100%; filter: drop-shadow(-1.6cqw 2cqw 1cqw rgba(15, 15, 30, .45)); transition: filter .6s; }
 .vn-machine.is-big .machine-base { filter: drop-shadow(-2cqw 4cqw 3cqw rgba(10, 10, 25, .55)); }
 .vn-machine.is-on .machine-base { filter: drop-shadow(-2cqw 4cqw 3cqw rgba(10, 10, 25, .55)) drop-shadow(0 0 4cqw rgba(255, 220, 140, .4)); transition: filter 1s ease .3s; }
@@ -1323,13 +1350,13 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 /* Un personaje a la vez, a la derecha (mismo lugar para los tres) */
 .vn-scene-report .vn-character { left: auto; right: -4%; height: 86%; bottom: -5%; }
 /* Área del informe: sin tarjeta, todo flota sobre el laboratorio */
-.report-area { position: absolute; left: 2%; right: 38%; top: 3%; bottom: 27%; z-index: 5; display: flex; flex-direction: column; overflow: hidden; }
+.report-area { position: absolute; left: 2%; right: 40%; top: 3%; bottom: 27%; z-index: 5; display: flex; flex-direction: column; }
 .report-area button { font-family: var(--dialog); font-weight: 700; color: #1d1a33; }
 .report-processing { flex: 1; display: grid; place-items: center; container-type: inline-size; }
 .report-processing .vn-machine { position: relative; inset: auto; width: min(100%, 80cqw); }
-.report-result { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(1 * var(--u)); overflow: hidden; }
+.report-result { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: calc(1 * var(--u)); }
 
-.report-head { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: calc(1.2 * var(--u)); }
+.report-head { display: flex; align-items: center; justify-content: flex-start; gap: calc(2 * var(--u)); }
 .report-formula::before { /* trozo de cinta adhesiva */
   content: ''; position: absolute; top: calc(-.8 * var(--u)); left: 50%; translate: -50% 0; rotate: -3deg;
   width: calc(6 * var(--u)); height: calc(1.6 * var(--u)); background: rgba(226, 214, 180, .85);
@@ -1357,7 +1384,7 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .stamp.is-false { color: #b0332a; }
 
 /* Árbol de la fórmula: notas de papel unidas con hilos, y una cámara que se mueve */
-.report-tree { position: relative; flex: 1 1 0; min-height: 0; margin-left: 22%; overflow: hidden; } /* más a la derecha */
+.report-tree { position: relative; flex: 1; min-height: 0; margin-left: 10%; } /* un poco a la derecha del panel; el resto del ancho es para el árbol */
 .bombe-conclusion {
   flex: 0 1 auto;
   max-height: 45%;
@@ -1543,16 +1570,20 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .report-head .report-formula { white-space: nowrap; flex: none; }
 /* los botones salen de la columna del árbol hacia la derecha (arriba, sobre la ventana),
    así no empujan el árbol hacia abajo */
-.report-head .report-actions {
-  position: static;
-  flex: 1 0 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: calc(.8 * var(--u));
-  white-space: normal;
-  margin-top: calc(.3 * var(--u));
+.vn-scene-report > .report-actions {
+  position: absolute; z-index: 8; right: 3%; bottom: 7%; width: calc(25 * var(--u));
+  display: flex; flex-direction: column; align-items: stretch; gap: calc(.9 * var(--u));
 }
+.report-btn {
+  cursor: pointer; font-family: var(--dialog); font-weight: 700; font-size: calc(1.6 * var(--u)); line-height: 1.2;
+  padding: calc(.9 * var(--u)) calc(2 * var(--u)); border-radius: 999px;
+  color: #fff; background: #1d1a33; border: 2px solid #fffaf0; box-shadow: 0 calc(.35 * var(--u)) 0 rgba(0, 0, 0, .45);
+}
+.report-btn:hover { background: #2b5797; }
+.report-btn.is-main { font-size: calc(1.9 * var(--u)); background: #4a347d; border-color: #d6c6ff; }
+.report-btn.is-main:hover { background: #6951a6; }
+.report-btn.is-ghost { color: #1d1a33; background: #fffaf0; border-color: #1d1a33; }
+.report-btn.is-ghost:hover { background: #ffd970; }
 /* En la consola y el informe, Turing no se refleja (mira en la dirección original de su dibujo) */
 .vn-scene-console .vn-flip, .vn-scene-report .rp-turing .vn-flip { transform: none; }
 
@@ -1572,7 +1603,24 @@ button.ghost { background: none; border: none; padding: 2px 6px; color: var(--in
 .vn-scene-console .env { width: 100%; align-items: stretch; }
 
 /* Dato curioso: botón «i» arriba a la derecha de cada escena y nota de papel con el dato */
-.scene-info { position: absolute; top: calc(1.2 * var(--u)); right: calc(1.2 * var(--u)); z-index: 20; display: flex; flex-direction: column; align-items: flex-end; }
+.scene-info { position: absolute; top: calc(1.2 * var(--u)); right: calc(1.2 * var(--u)); z-index: 20; display: flex; flex-direction: row; align-items: center; gap: calc(1.4 * var(--u)); }
+/* Año de la escena: hoja de calendario arrancada, grande, junto al «i» */
+.scene-year {
+  position: relative; display: grid; place-items: center; pointer-events: none;
+  padding: calc(1.5 * var(--u)) calc(1.6 * var(--u)) calc(.5 * var(--u));
+  background: #fffaf0; border: 2.5px solid #1d1a33; border-radius: calc(.7 * var(--u));
+  box-shadow: 0 calc(.35 * var(--u)) 0 #1d1a33; overflow: hidden;
+}
+.scene-year::before { /* franja roja del calendario con sus dos anillos */
+  content: ''; position: absolute; inset: 0 0 auto; height: calc(1 * var(--u));
+  background: radial-gradient(circle at 28% 55%, #1d1a33 0 calc(.22 * var(--u)), transparent calc(.25 * var(--u))),
+              radial-gradient(circle at 72% 55%, #1d1a33 0 calc(.22 * var(--u)), transparent calc(.25 * var(--u))), #b0332a;
+  border-bottom: 2px solid #1d1a33;
+}
+.scene-year-num {
+  font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-size: calc(4.2 * var(--u)); line-height: 1;
+  letter-spacing: .04em; color: #1d1a33; -webkit-text-stroke: .8px currentColor;
+}
 .scene-info-btn {
   width: calc(3.4 * var(--u)); height: calc(3.4 * var(--u)); padding: 0; cursor: pointer; line-height: 1;
   font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2 * var(--u)); color: #1d1a33;
@@ -1694,6 +1742,14 @@ input, textarea, [contenteditable="true"] { caret-color: auto; }
 }
 .intro-underline { width: calc(42 * var(--iu)); margin-top: calc(.4 * var(--iu)); overflow: visible; }
 .intro-sub { margin: calc(.6 * var(--iu)) 0 calc(2.6 * var(--iu)); font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2.4 * var(--iu)); color: #2a2540; }
+.intro-kicker {
+  margin-bottom: calc(.6 * var(--iu)); rotate: -3deg; font-family: 'Gochi Hand', 'Caveat', cursive;
+  font-size: calc(2.6 * var(--iu)); color: #7a3566;
+}
+.intro-route { display: flex; align-items: center; gap: calc(.35 * var(--iu)); margin: calc(.8 * var(--iu)) 0 calc(2.6 * var(--iu)); padding: 0; list-style: none; }
+.intro-route li { font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(2.2 * var(--iu)); color: #2b5797; }
+.intro-route li + li::before { content: '→'; margin-right: calc(.4 * var(--iu)); color: #2a2540; opacity: .55; }
+.intro-route li:first-child, .intro-route li:last-child { color: #b0332a; }
 .intro-start {
   cursor: pointer; padding: calc(1 * var(--iu)) calc(3.4 * var(--iu));
   font-family: var(--dialog); font-weight: 700; font-size: calc(2.1 * var(--iu)); color: #f6ecd6;
@@ -1704,3 +1760,30 @@ input, textarea, [contenteditable="true"] { caret-color: auto; }
 .intro-start:active { transform: translateY(3px); box-shadow: 0 calc(.15 * var(--iu)) 0 #141a3a; }
 .intro-hint { margin-top: calc(1.2 * var(--iu)); font-family: 'Gochi Hand', 'Caveat', cursive; font-size: calc(1.6 * var(--iu)); color: #2a2540; }
 .brand a { color: inherit; text-decoration: none; }
+
+/* ── Salto en el tiempo entre escenas (ver TimeJump.tsx) ── */
+.time-jump {
+  position: fixed; inset: 0; z-index: 200; overflow: hidden; display: grid; place-items: center; /* toda la pantalla, también el panel */
+  container-type: size; cursor: progress; /* se traga los clics mientras dura */
+}
+.time-jump-flash { position: absolute; inset: 0; background: radial-gradient(circle, #fbf8ff 0 25%, #c9bcff 60%, #6f5bc4 100%); }
+.time-jump-swirl { position: absolute; left: 50%; top: 50%; margin: -80cqmax 0 0 -80cqmax; width: 160cqmax; height: 160cqmax; max-width: none; object-fit: contain; pointer-events: none; }
+.time-jump-card {
+  position: relative; display: grid; place-items: center; --u: min(1cqw, 1.778cqh);
+  padding: 0 calc(3.6 * var(--u));
+  background: #fffaf0; border: 4px solid #1d1a33; border-radius: calc(1.4 * var(--u));
+  box-shadow: 0 calc(.8 * var(--u)) 0 #1d1a33, 0 0 calc(6 * var(--u)) rgba(255, 255, 255, .9); overflow: hidden;
+}
+.time-jump-card::before { /* franja roja con anillos, como la hoja del calendario de cada escena */
+  content: ''; position: absolute; z-index: 1; inset: 0 0 auto; height: calc(2.2 * var(--u));
+  background: radial-gradient(circle at 28% 55%, #1d1a33 0 calc(.5 * var(--u)), transparent calc(.55 * var(--u))),
+              radial-gradient(circle at 72% 55%, #1d1a33 0 calc(.5 * var(--u)), transparent calc(.55 * var(--u))), #b0332a;
+  border-bottom: 3px solid #1d1a33;
+}
+.time-jump-year {
+  display: flex; font-family: 'Single Day', 'Patrick Hand', var(--dialog); font-size: calc(11 * var(--u)); line-height: 1;
+  color: #1d1a33; -webkit-text-stroke: 1.5px currentColor;
+}
+.time-jump-digit { display: inline-block; height: 1.4em; overflow: hidden; } /* 1.4em = CELL en TimeJump.tsx */
+.time-jump-strip { display: flex; flex-direction: column; }
+.time-jump-strip > span { box-sizing: border-box; height: 1.4em; padding-top: .22em; display: grid; place-items: center; }

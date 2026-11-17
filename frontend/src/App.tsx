@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, type Location } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ControlPanel } from './components/ControlPanel';
+import { COVER_MS, ROUTE_YEARS, TimeJump } from './components/vn/TimeJump';
 import { Activation } from './scenes/Activation';
 import { Console } from './scenes/Console';
 import { ExamRoom } from './scenes/ExamRoom';
 import { ExamReturn } from './scenes/ExamReturn';
+import { Intro } from './scenes/Intro';
 import { LanguageWorkshop } from './scenes/LanguageWorkshop';
 import { Report } from './scenes/Report';
 import { UniverseRoom } from './scenes/UniverseRoom';
@@ -23,7 +25,9 @@ const FADE_MS = 800;
 function Scenes({ location }: { location: Location }) {
   return (
     <Routes location={location}>
-      <Route path="/" element={<ExamRoom />} />
+      {/* «/» es la portada: se dibuja aparte, encima de todo (ver abajo) */}
+      <Route path="/" element={null} />
+      <Route path="/salon" element={<ExamRoom />} />
       <Route path="/turing" element={<Locked module="activation"><Activation /></Locked>} />
       <Route path="/activacion" element={<Activation />} />
       <Route path="/lenguaje" element={<Locked module="language"><LanguageWorkshop /></Locked>} />
@@ -42,9 +46,29 @@ export default function App() {
   // que se desvanece mientras la nueva aparece encima; al terminar, la capa vieja se quita.
   const [prev, setPrev] = useState<Location | null>(null);
   const [current, setCurrent] = useState(location);
+  // Salto en el tiempo: solo cuando la escena nueva ocurre en otro año
+  const [jump, setJump] = useState<{ id: number; from: number; to: number } | null>(null);
+  const calm = useReducedMotion();
+  // Durante un salto, la escena nueva espera a que el remolino tape toda la pantalla y entonces
+  // reemplaza a la vieja de golpe (sin fundido): así nada de la escena nueva se asoma antes.
+  const pending = useRef<Location | null>(null);
+  const swapNow = useCallback(() => {
+    if (!pending.current) return;
+    setPrev(null);
+    setCurrent(pending.current);
+    pending.current = null;
+  }, []);
+  const endJump = useCallback(() => { swapNow(); setJump(null); }, [swapNow]);
 
   useEffect(() => {
     if (location.pathname === current.pathname) { setCurrent(location); return; }
+    const from = ROUTE_YEARS[current.pathname], to = ROUTE_YEARS[location.pathname];
+    if (!calm && from !== undefined && to !== undefined && from !== to) {
+      setJump({ id: Date.now(), from, to });
+      pending.current = location;
+      const id = setTimeout(swapNow, COVER_MS);
+      return () => clearTimeout(id);
+    }
     setPrev(current);
     setCurrent(location);
     const id = setTimeout(() => setPrev(null), FADE_MS);
@@ -54,6 +78,10 @@ export default function App() {
 
   return (
     <>
+    {/* Portada: ocupa toda la pantalla (también el panel) y se desvanece al empezar */}
+    <AnimatePresence>{location.pathname === '/' && <Intro key="intro" />}</AnimatePresence>
+    {/* Salto en el tiempo: tapa toda la pantalla, también el panel lateral */}
+    {jump && <TimeJump key={jump.id} from={jump.from} to={jump.to} onSkip={swapNow} onDone={endJump} />}
     <div className="machine">
       <ControlPanel />
       <main className="stage">

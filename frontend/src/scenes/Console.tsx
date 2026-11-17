@@ -22,7 +22,7 @@ type Phase = 'intro' | 'write' | 'error' | 'env' | 'leaving';
 interface Line { expression: Expression; text: string }
 
 const INTRO: Line[] = [
-  { expression: 'happy', text: '¡Has vuelto a mi taller! Ya tienes el lenguaje que construiste con Gödel y el mundo que definiste con Tarski.' },
+  { expression: 'happy', text: '¡Tú otra vez! Para mí pasaron siete años desde que apareciste en el Hut 8. Ahora estamos en Mánchester, en 1948, y la máquina que imaginé en 1936 por fin existe de verdad… y traes el lenguaje de Gödel y el mundo de Tarski.' },
   { expression: 'talk', text: 'Escribe una fórmula. La máquina comprobará su estructura y la evaluará en la interpretación que construiste.' },
 ];
 const WRITE: Line = { expression: 'talk', text: 'Escribe con las teclas de la máquina o con tu teclado. Pasa el mouse por una tecla para ver qué significa. Cuando esté lista, analízala.' };
@@ -231,9 +231,9 @@ export function Console() {
 
   return (
     <section className="vn-scene vn-scene-turing vn-scene-console" aria-label="Escena 4: Consola">
-      <SceneInfo place="Mi taller · Última práctica" fact="Después de pasar por los talleres, vuelves a mi consola para escribir la fórmula del examen y comprobarla paso a paso." />
+      <SceneInfo year={1948} photo={{ src: '/assets/notes/manchester-lab.webp', alt: 'Sala llena de bastidores de válvulas y cables de las primeras computadoras de Mánchester', caption: 'Las primeras computadoras de la Universidad de Mánchester, hacia 1949.' }} place="Laboratorio de computación, Mánchester" fact="Estamos en el laboratorio de computación de Mánchester, en 1948. Ese año la «Manchester Baby» ejecutó por primera vez un programa guardado en su memoria: por fin existía algo parecido a la máquina universal que Turing describió en 1936, capaz de hacer el trabajo de cualquier otra. A sus sucesoras se les daban las instrucciones con un teletipo, como tu fórmula en este teclado." />
       <div className="vn-stage">
-        <img className="vn-bg" src="/assets/scene5/bg-hut8.png" alt="" draggable={false} />
+        <img className="vn-bg" src="/assets/scene1/bg-lab.png" alt="" draggable={false} />
       </div>
 
       {phase !== 'intro' && (

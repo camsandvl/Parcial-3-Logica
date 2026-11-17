@@ -16,8 +16,9 @@ interface Line {
 }
 
 const SCRIPT: Line[] = [
-  { expression: 'neutral', text: 'Bienvenido. Soy Alan Turing. Has caído en mi taller; no te preocupes, aquí aprenderás a operar esta máquina.' },
-  { expression: 'talk', text: 'Aquí aprenderás a operar una máquina que sigue pasos precisos para comprobar fórmulas de lógica de primer orden.' },
+  { expression: 'neutral', text: 'Bienvenido. Soy Alan Turing. Has caído en el Hut 8 de Bletchley Park, en plena guerra; no te preocupes, aquí aprenderás a operar esta máquina.' },
+  { expression: 'talk', text: 'La imaginé en 1936, en un artículo: una cinta, un cabezal que lee y escribe, y unas pocas reglas. Con eso basta para seguir cualquier cálculo paso a paso.' },
+  { expression: 'talk', text: 'Aquí en Bletchley la idea se pone a prueba: nuestras máquinas revisan una posibilidad tras otra, sin saltarse ninguna. Esta hará lo mismo con fórmulas de lógica de primer orden.' },
   { expression: 'talk', text: 'Después visitarás a Gödel para construir el lenguaje y a Tarski para darle significado. Sin ellos, una fórmula no puede evaluarse.' },
   { expression: 'talk', text: 'Cuando termines el recorrido, encontrarás el camino de regreso.' },
   { expression: 'talk', text: 'Pero antes hay que ponerla en marcha. Pulsa el botón.', waitsForStart: true },
@@ -92,11 +93,11 @@ export function Activation() {
 
   return (
     <section className={`vn-scene vn-scene-turing ${on ? 'is-on' : ''}`} aria-label="Escena 1: Activación">
-      <SceneInfo place="Mi taller · Fuera del tiempo" fact="Este taller es un espacio ficticio al que llegamos desde el salón de clases. Aquí convierto los pasos abstractos de la lógica en operaciones que una máquina puede seguir." />
+      <SceneInfo year={1941} photo={{ src: '/assets/notes/bletchley-park.webp', alt: 'Foto de grupo de criptoanalistas británicos; Alan Turing está sentado abajo a la izquierda', caption: 'Alan Turing (sentado, a la izquierda) con colegas criptoanalistas.' }} place="Hut 8, Bletchley Park" fact="Estamos en el Hut 8 de Bletchley Park, donde Turing dirigió al equipo que descifraba los mensajes navales de Enigma. En 1936 había imaginado la «máquina de Turing»: una cinta, un cabezal y unas pocas reglas. Era una idea, no un aparato. Aquí las máquinas sí eran reales: las «bombes», que probaban una posibilidad tras otra para hallar la clave del día. Pero solo servían para eso." />
       {/* Escenario 16:9 que cubre el área: fondo y objetos alineados al fondo. */}
       <div className={`vn-stage ${on ? 'is-on' : ''}`}>
         <motion.div className="vn-shake" animate={shake}>
-          <img className="vn-bg" src="/assets/scene1/bg-lab.png" alt="" draggable={false} />
+          <img className="vn-bg" src="/assets/scene5/bg-hut8.png" alt="" draggable={false} />
           <div className="vn-ambient" aria-hidden="true" />
           {/* Al principio la nota está clavada en la pared (y se oscurece con la habitación). */}
           {!big && note}

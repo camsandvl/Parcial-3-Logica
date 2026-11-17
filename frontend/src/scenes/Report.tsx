@@ -41,7 +41,7 @@ function explain(n: TraceNode): string {
         ? `Se cumple para cada elemento del dominio: se revisaron los ${checked} y ninguno falló.`
         : `Ningún elemento del dominio la cumple: se revisaron los ${checked} y todos dieron falso.`;
     case 'atomic':
-      return `Se consulta directamente mi interpretación: ${n.text} ${n.value ? 'está' : 'no está'} entre los casos donde el predicado es verdadero.`;
+      return `Se consulta directamente la interpretación que construimos: ${n.text} ${n.value ? 'está' : 'no está'} entre los casos donde el predicado es verdadero.`;
     default: {
       const [a, b] = n.children;
       switch (n.node) {
@@ -145,7 +145,7 @@ export function Report() {
 
   return (
     <section className="vn-scene vn-scene-report" aria-label="Informe">
-      <SceneInfo place="Regreso al salón de clases" fact="El portal nos devuelve al examen. La fórmula ya fue analizada y evaluada: ahora podemos defender la respuesta explicando el lenguaje, la interpretación, los testigos y los contraejemplos." />
+      <SceneInfo year={1948} place="Sala de conferencias" fact="Estamos en una sala de conferencias porque en salas como esta se presentaban los grandes resultados de la lógica: frente a la pizarra y ante otros colegas, explicando cada paso para que cualquiera pudiera comprobarlo. Es justo lo que hace ahora la máquina con tu fórmula, parte por parte." />
       <div className="vn-stage">
         <img className="vn-bg" src="/assets/scene4/bg-lecture-hall.png" alt="" draggable={false} />
       </div>
@@ -166,13 +166,6 @@ export function Report() {
                   transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.15 }}>
                   {value ? 'VERDADERO' : 'FALSO'}
                 </motion.span>
-                {finished && (
-                  <motion.div className="report-actions" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <button type="button" className="btn-ghost btn-small" onClick={() => navigate('/universo')}>Cambiar el mundo</button>
-                    <button type="button" className="btn-install" onClick={() => navigate('/consola')}>Probar otra fórmula</button>
-                    <button type="button" className="btn-install" onClick={() => navigate('/examen')}>Volver al examen</button>
-                  </motion.div>
-                )}
               </header>
 
               <div className="report-tree">
@@ -196,6 +189,15 @@ export function Report() {
 
       <DialogBox speaker={NAMES[who]} side="right" tone={who} text={current.text}
         canAdvance={done && !finished && !picked} onAdvance={() => setLine((l) => Math.min(l + 1, lines.length - 1))} onTypingChange={setTalking} />
+      {/* Al terminar: las tres salidas apiladas sobre el personaje, a la altura del pecho (sin taparle la cara) */}
+      {finished && (
+        <motion.div className="report-actions" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 18, delay: 0.3 }}>
+          <button type="button" className="report-btn is-main" onClick={() => navigate('/examen')}>Volver al examen →</button>
+          <button type="button" className="report-btn" onClick={() => navigate('/consola')}>Probar otra fórmula</button>
+          <button type="button" className="report-btn is-ghost" onClick={() => navigate('/universo')}>Cambiar el mundo</button>
+        </motion.div>
+      )}
 
     </section>
   );
