@@ -1,26 +1,22 @@
-# La Máquina de Turing
+# Un viaje en el tiempo
 
 Aplicación educativa y evaluador semántico de lógica de primer orden. El proyecto combina una interfaz de videojuego narrativo con React y un backend de FastAPI que analiza fórmulas finitas, interpreta símbolos y devuelve verdadero o falso con una explicación.
 
-La aplicación sigue la idea de MM3032: el usuario define un lenguaje, construye una interpretación finita, escribe una fórmula y recibe su valor de verdad junto con testigos, contraejemplos o comprobación completa.
+Ale Sierra
+Cami Sandoval
+Emily Góngora
 
-## Contenido
-
-- [Objetivo del proyecto](#objetivo-del-proyecto)
-- [Tecnologías](#tecnologías)
-- [Requisitos](#requisitos)
-- [Ejecutar el proyecto](#ejecutar-el-proyecto)
-- [Comandos útiles](#comandos-útiles)
-- [Flujo general](#flujo-general)
-- [Conceptos que implementa](#conceptos-que-implementa)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [API principal](#api-principal)
-- [Pruebas](#pruebas)
-- [Aclaración sobre la historia](#aclaración-sobre-la-historia)
+Video de ejecución: https://drive.google.com/file/d/1qFylmuJ_1HJvnPh-5ZlSEX3xXJZJEJG_/view?usp=sharing 
 
 ## Objetivo del proyecto
 
-El objetivo no es descifrar mensajes ni simular una máquina de Turing completa. El programa determina si una fórmula de lógica de primer orden es verdadera o falsa dentro de una interpretación finita ingresada por el usuario.
+El objetivo es construir un programa que determina si una fórmula de lógica de primer orden es verdadera o falsa dentro de una interpretación finita ingresada por el usuario. Nosotras quisimos darle un enfoque tipo videojuego, partiendo de una situación en la que todos hemos estado, estar en un examen y no saber nada. A partir de eso jugamos con el viaje en el tiempo y visitamos a diferentes matemáticos que nos ayudan explicando:
+
+- Turing: procedimiento paso a paso.
+- Gödel: construcción del lenguaje formal.
+- Tarski: construcción de la interpretación y semántica de verdad.
+
+Finalmente con el lenguaje y la interpretación ingresamos una fórmula y validamos si es V o F, mostramos el árbol sintáctico y los matemáticos nos ayudan explicando por qué. Regresamos al examen con nuevos conocimientos de lógica matemática y de su historia.
 
 La evaluación depende de:
 
@@ -34,7 +30,7 @@ Fórmula
 = verdadero o falso
 ```
 
-Cumple los requisitos principales de la guía:
+Cumple los requisitos:
 
 1. Lenguaje configurable con nombres y aridades.
 2. Dominio finito no vacío.
@@ -773,15 +769,6 @@ npm run build
 npm run lint
 ```
 
-## Aclaración sobre la historia
-
-Turing, Gödel y Tarski aparecen como guías narrativos que representan tres etapas conceptuales:
-
-- Turing: procedimiento paso a paso.
-- Gödel: construcción del lenguaje formal.
-- Tarski: construcción de la interpretación y semántica de verdad.
-
-La aplicación no afirma que Turing haya diseñado literalmente esta máquina, ni que el evaluador sea una máquina de Turing formal completa. La interfaz usa esa historia como una reconstrucción educativa simplificada.
 
 ## Datos almacenados
 
